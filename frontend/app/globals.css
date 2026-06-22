@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --shadow-soft: 0 1px 2px rgba(11, 46, 60, 0.04), 0 8px 24px -12px rgba(11, 46, 60, 0.18);
+  --shadow-hover: 0 2px 4px rgba(11, 46, 60, 0.06), 0 18px 40px -16px rgba(11, 46, 60, 0.28);
+}
+
+body {
+  background: theme("colors.sand");
+  color: #10222a;
+}
+
+/* Elegant display face for headings (the "qualco" editorial feel). */
+h1, h2, .font-display {
+  font-family: var(--font-display), var(--font-cairo), serif;
+  font-weight: 600;
+}
+
+/* Break a child out of its constrained container to full viewport width. */
+.full-bleed {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Clean print/PDF of statements: hide site chrome, white background. */
+@media print {
+  header, footer, .no-print { display: none !important; }
+  body { background: #ffffff; }
+  main { padding-top: 0 !important; }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200;
+  }
+  /* Signature CTA: Egyptian gold on navy text. */
+  .btn-primary {
+    @apply btn bg-gold text-brand-dark shadow-[0_8px_20px_-8px_rgba(201,162,75,0.7)] hover:bg-gold-dark hover:text-white active:scale-95;
+  }
+  .btn-navy {
+    @apply btn bg-brand text-white hover:bg-brand-dark active:scale-95;
+  }
+  .btn-outline {
+    @apply btn border border-brand/15 bg-white/80 hover:border-brand/30 hover:bg-white active:scale-[0.98];
+  }
+  .card {
+    @apply rounded-2xl border border-brand/[0.07] bg-white shadow-[var(--shadow-soft)];
+  }
+  .input {
+    @apply w-full rounded-xl border border-brand/15 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-black/45 focus:border-gold focus:ring-4 focus:ring-gold/20;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+  .chip {
+    @apply cursor-pointer rounded-full border px-3.5 py-1.5 text-sm transition-all duration-200;
+  }
+}
+
+.hero-overlay {
+  /* Warm amber at the top, settling into brand navy — inviting + readable. */
+  background: linear-gradient(165deg, rgba(120, 72, 30, 0.28) 0%, rgba(11, 46, 60, 0.42) 45%, rgba(7, 31, 41, 0.72) 100%);
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 0.5s ease both; }
