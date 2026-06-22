@@ -124,6 +124,6 @@ async def submit_for_review(
 
 
 @router.delete("/{property_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_property(property_id: uuid.UUID, host: HostUser, db: DbSession) -> None:
+async def delete_property(property_id: uuid.UUID, host: HostUser, db: DbSession):
     prop = await property_service.get_owned_property(db, property_id, host)
     await property_service.delete_property(db, prop)

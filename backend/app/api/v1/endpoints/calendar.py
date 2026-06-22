@@ -128,7 +128,7 @@ async def add_source(
 )
 async def delete_source(
     property_id: uuid.UUID, source_id: uuid.UUID, host: HostUser, db: DbSession
-) -> None:
+):
     await property_service.get_owned_property(db, property_id, host)
     source = await calendar_service.get_ical_source(db, property_id, source_id)
     await calendar_service.delete_ical_source(db, source)
