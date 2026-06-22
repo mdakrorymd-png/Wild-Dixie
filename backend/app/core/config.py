@@ -24,12 +24,16 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL")
     @classmethod
     def _force_asyncpg(cls, v: str) -> str:
-        """Cloud providers (Render/Railway/Heroku) hand out a ``postgres://`` or
-        ``postgresql://`` URL — rewrite it to the async driver our app needs."""
+        """Cloud providers (Neon/Render/Railway/Heroku) hand out a ``postgres://``
+        or ``postgresql://`` URL — rewrite it to the async driver our app needs,
+        and drop libpq-only query params (``sslmode``/``channel_binding``) that
+        asyncpg rejects. TLS is re-applied through ``db_connect_args``."""
         if v.startswith("postgres://"):
             v = "postgresql+asyncpg://" + v[len("postgres://"):]
         elif v.startswith("postgresql://"):
             v = "postgresql+asyncpg://" + v[len("postgresql://"):]
+        if "?" in v:
+            v = v.split("?", 1)[0]
         return v
 
     # ---- Security / JWT ----
@@ -73,6 +77,18 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.ENVIRONMENT.lower() == "production"
+
+    @property
+    def db_connect_args(self) -> dict:
+        """asyncpg connect args. Remote managed Postgres (Neon/Render/Railway)
+        requires TLS; localhost dev does not. Applied in both the app engine and
+        the Alembic engine."""
+        from urllib.parse import urlparse
+
+        host = urlparse(self.DATABASE_URL).hostname or ""
+        if host not in {"localhost", "127.0.0.1", "::1", ""}:
+            return {"ssl": True}
+        return {}
 
 
 @lru_cache

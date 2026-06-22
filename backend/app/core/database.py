@@ -15,6 +15,7 @@ engine = create_async_engine(
     echo=settings.ENVIRONMENT == "development",
     pool_pre_ping=True,
     future=True,
+    connect_args=settings.db_connect_args,
 )
 
 AsyncSessionLocal = async_sessionmaker(
