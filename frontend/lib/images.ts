@@ -58,6 +58,10 @@ const AREA_PHOTO: Record<string, string> = {
 // Warm, welcoming hero image for landing sections.
 export const WARM_HERO = "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1600&q=80";
 
+// 1200x630 default social-share card (Open Graph / WhatsApp preview for pages
+// without their own image, e.g. the home page).
+export const OG_DEFAULT = "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1200&h=630&q=80";
+
 export function areaImage(area: string, w = 600): string {
   const photo = AREA_PHOTO[area] ?? POOL[hash(area) % POOL.length];
   return urlFor(photo, w);

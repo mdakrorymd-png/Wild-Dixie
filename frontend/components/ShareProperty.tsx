@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+import { SITE_URL } from "@/lib/site";
 
 export function ShareProperty({ id, title }: { id: string; title: string }) {
   const [copied, setCopied] = useState(false);
 
   function shareUrl(source: string): string {
-    const base = SITE || (typeof window !== "undefined" ? window.location.origin : "");
+    const base = SITE_URL || (typeof window !== "undefined" ? window.location.origin : "");
     return `${base}/properties/${id}?utm_source=${source}&utm_medium=share&utm_campaign=listing`;
   }
 
