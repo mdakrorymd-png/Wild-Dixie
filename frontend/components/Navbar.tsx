@@ -23,6 +23,7 @@ export function Navbar() {
 
   const isHost = user?.roles.includes("host");
   const isAdmin = user?.roles.includes("admin");
+  const listHref = !user ? "/register" : isHost ? "/host" : "/profile";
   // Transparent (white text) only over a dark hero, at the top, menu closed.
   const overHero = TRANSPARENT_ROUTES.includes(pathname) && !scrolled && !open;
 
@@ -39,9 +40,9 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-1 text-base md:flex">
-          <NavLink href="/" label="لمُلّاك الوحدات" active={pathname === "/"} light={overHero} />
-          <NavLink href="/sokhna" label="احجز في السخنة" active={pathname === "/sokhna"} light={overHero} />
-          <NavLink href="/#services" label="الخدمات" light={overHero} />
+          <NavLink href="/sokhna" label="احجز شاليه" active={pathname === "/sokhna"} light={overHero} />
+          <NavLink href="/#list" label="اعرض وحدتك" light={overHero} />
+          <NavLink href="/#manage" label="الإدارة الكاملة" light={overHero} />
           <NavLink href="/#pricing" label="الأسعار" light={overHero} />
           {isHost && <NavLink href="/owners/dashboard" label="لوحة المالك" light={overHero} />}
           {isHost && <NavLink href="/host" label="عقاراتي" light={overHero} />}
@@ -64,7 +65,7 @@ export function Navbar() {
           ) : (
             <NavLink href="/login" label="دخول" light={overHero} />
           )}
-          <Link href="/#estimator" className="btn-primary mr-1 text-base">احسب دخلك مجانًا</Link>
+          <Link href={listHref} className="btn-primary mr-1 text-base">اعرض وحدتك</Link>
         </nav>
 
         <button onClick={() => setOpen((v) => !v)} aria-label="القائمة" className={`rounded-lg p-2 md:hidden ${text}`}>
@@ -77,9 +78,9 @@ export function Navbar() {
       {open && (
         <nav className="border-t border-brand/10 bg-white px-4 py-3 text-sm md:hidden">
           <div className="flex flex-col gap-1">
-            <MobileLink href="/" label="لمُلّاك الوحدات" onClick={() => setOpen(false)} />
-            <MobileLink href="/sokhna" label="احجز في السخنة" onClick={() => setOpen(false)} />
-            <MobileLink href="/#services" label="الخدمات" onClick={() => setOpen(false)} />
+            <MobileLink href="/sokhna" label="احجز شاليه" onClick={() => setOpen(false)} />
+            <MobileLink href="/#list" label="اعرض وحدتك" onClick={() => setOpen(false)} />
+            <MobileLink href="/#manage" label="الإدارة الكاملة" onClick={() => setOpen(false)} />
             <MobileLink href="/#pricing" label="الأسعار" onClick={() => setOpen(false)} />
             {user ? (
               <>
@@ -92,7 +93,7 @@ export function Navbar() {
             ) : (
               <MobileLink href="/login" label="دخول" onClick={() => setOpen(false)} />
             )}
-            <Link href="/#estimator" onClick={() => setOpen(false)} className="btn-primary mt-2">احسب دخلك مجانًا</Link>
+            <Link href={listHref} onClick={() => setOpen(false)} className="btn-primary mt-2">اعرض وحدتك</Link>
           </div>
         </nav>
       )}

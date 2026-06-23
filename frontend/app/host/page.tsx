@@ -27,7 +27,26 @@ export default function HostPage() {
 
   if (loading) return <p className="text-black/50">…</p>;
   if (!user?.roles.includes("host"))
-    return <p className="text-black/50">هذه الصفحة للمضيفين فقط. فعّل حساب المضيف من صفحة الملف الشخصي.</p>;
+    return (
+      <div className="mx-auto max-w-md py-10 text-center">
+        <h1 className="text-2xl font-bold text-brand">اعرض وحدتك على وايلد ديكسي</h1>
+        <p className="mt-2 text-sm text-black/55">
+          {user
+            ? "فعّل حساب المالك من صفحة الملف الشخصي عشان تبدأ تعرض وحدتك وتستورد من Airbnb في ٢٠ ثانية."
+            : "سجّل حساب مجاني (أو ادخل)، وبعدها فعّل حساب المالك — وتقدر تستورد وحدتك من Airbnb في ٢٠ ثانية."}
+        </p>
+        <div className="mt-5 flex flex-wrap justify-center gap-3">
+          {user ? (
+            <Link href="/profile" className="btn-primary px-6 py-3">فعّل حساب المالك</Link>
+          ) : (
+            <>
+              <Link href="/register" className="btn-primary px-6 py-3">سجّل مجانًا</Link>
+              <Link href="/login" className="btn-outline px-6 py-3">دخول</Link>
+            </>
+          )}
+        </div>
+      </div>
+    );
 
   async function runImport() {
     setBusy(true);

@@ -54,8 +54,13 @@ export function Pricing() {
   return (
     <section id="pricing" className="mb-14 scroll-mt-24">
       <div className="mb-2 text-center">
-        <h2 className="text-3xl font-bold sm:text-4xl">باكدجات تناسب وحدتك</h2>
-        <p className="mt-2 text-sm text-black/55">اختار اللي يناسبك — والنظافة دايمًا على الضيف، من غير مقدّم، وتجربة قابلة للإلغاء.</p>
+        <span className="text-sm font-semibold tracking-wide text-gold-dark">للإدارة الكاملة بس</span>
+        <h2 className="mt-1 text-3xl font-bold sm:text-4xl">باكدجات الإدارة الكاملة</h2>
+        <p className="mx-auto mt-2 max-w-xl text-sm text-black/55">
+          للي عايز يسيب التشغيل علينا بالكامل — من غير مقدّم وتجربة قابلة للإلغاء. مش عايز إدارة؟{" "}
+          <Link href="/#list" className="font-semibold text-gold-dark underline-offset-2 hover:underline">اعرض وحدتك مجانًا</Link>{" "}
+          وادفع عمولة على الحجز بس.
+        </p>
       </div>
       <div className="mt-8 grid gap-5 lg:grid-cols-3">
         {PLANS.map((p) => (

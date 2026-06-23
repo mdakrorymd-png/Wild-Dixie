@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import type { PropertyListItem } from "@/lib/types";
 import { PropertyCard } from "@/components/PropertyCard";
 import { EarningsEstimator } from "@/components/EarningsEstimator";
@@ -14,21 +15,32 @@ import { WARM_HERO } from "@/lib/images";
 
 const HERO = WARM_HERO;
 
-const STEPS = [
-  { n: "١", t: "استشارة مجانية", d: "نتعرّف على وحدتك وأهدافك وتوقعاتك للدخل." },
-  { n: "٢", t: "تجهيز وتسعير", d: "تصوير احترافي، قائمة محسّنة، وتسعير ديناميكي يلتقط الويك-إند والمواسم." },
-  { n: "٣", t: "إدارة كاملة", d: "نتولّى الضيوف، النظافة، البوابة، الصيانة، والتحصيل — وانت بتستلم كشف وفلوس كل شهر." },
+const IMPORT_STEPS = [
+  { n: "١", t: "الصق رابط Airbnb", d: "عندك إعلان على Airbnb؟ انسخ اللينك وبس." },
+  { n: "٢", t: "بنسحب كل حاجة", d: "الصور، الوصف، المرافق، وعدد الضيوف — تلقائيًا في ثواني." },
+  { n: "٣", t: "راجع وانشر", d: "تأكيد سريع، ووحدتك تبقى جاهزة للحجز على وايلد ديكسي." },
 ];
 
-const FAQ = [
-  ["العمولة كام؟", "عمولة ٢٠٪ من إجمالي الإيجار، والنظافة على الضيف (مش بتتخصم منك). من غير مقدّم وتجربة قابلة للإلغاء."],
-  ["هسلّم المفتاح لمين؟", "لفريق موثّق، وكل دخول وخروج بيتوثّق بالصور، وانت بتشوف كل حاجة في لوحة المالك."],
-  ["إزاي بتتعاملوا مع البوابة؟", "بندير تطبيق البوابة بإذنك ونصدر تصريح لكل ضيف برقمه القومي ولوحة عربيته."],
-  ["هستلم فلوسي إزاي؟", "تحويل عبر إنستاباي أو فودافون كاش، مع كشف شهري واضح بالإجمالي والعمولة والصافي."],
-  ["أقدر أرفض حجز؟", "أكيد — انت بتوافق على كل حجز في البداية، وتملّكك للوحدة كامل."],
+const FLOW = [
+  { n: "١", t: "أضف وحدتك", d: "استورد من Airbnb في ٢٠ ثانية، أو ضيفها يدويًا في دقايق." },
+  { n: "٢", t: "المستأجر يحجز ويدفع", d: "الحجز والعربون بيتمّوا عبر وايلد ديكسي — آمن وموثّق، مش كاش بيلف." },
+  { n: "٣", t: "استلم دخلك", d: "تحويل عبر إنستاباي وكشف واضح. وللي مختار الإدارة الكاملة، إحنا بنعمل كل ده بدالك." },
 ];
 
-export default function OwnersHome() {
+const FAQ: [string, string][] = [
+  ["إيه الفرق بين «اعرض بنفسك» و«الإدارة الكاملة»؟", "اعرض بنفسك: مجانًا — وحدتك تتعرض وتتحجز عندنا، وانت بتستقبل وتدير بنفسك، وبناخد عمولة بسيطة على الحجز بس. الإدارة الكاملة: إحنا بنتولّى كل حاجة (ضيوف، نظافة، بوابة، تحصيل) مقابل باكدج شهري."],
+  ["العرض بيكلّف كام؟", "العرض مجاني تمامًا — مفيش اشتراك ولا مقدّم. بناخد عمولة بسيطة على الحجوزات اللي بتتمّ عبرنا بس."],
+  ["إزاي بستورد من Airbnb؟", "الصق رابط إعلانك، وإحنا بنسحب الصور والوصف والمرافق وعدد الضيوف تلقائيًا — تراجعهم وتنشر في دقايق من غير تعب."],
+  ["المستأجر بيدفع إزاي؟", "الحجز والعربون عبر وايلد ديكسي (إنستاباي / فودافون كاش) — آمن وموثّق، وانت بتشوف كل حاجة في لوحتك."],
+  ["الإدارة الكاملة فيها إيه؟", "تسعير، تواصل الضيوف، نظافة موثّقة بالصور، تصاريح البوابة، صيانة، وتحصيل — وانت بتستلم كشف شهري. تبدأ من ١٥٪."],
+];
+
+export default function Home() {
+  const { user } = useAuth();
+  const isHost = user?.roles.includes("host");
+  // Smooth funnel: new visitor → register, existing non-host → profile (become host), host → import.
+  const listHref = !user ? "/register" : isHost ? "/host" : "/profile";
+
   const [featured, setFeatured] = useState<PropertyListItem[]>([]);
   const [openFaq, setOpenFaq] = useState(-1);
 
@@ -38,29 +50,34 @@ export default function OwnersHome() {
 
   return (
     <div>
-      {/* 1. Hero (full-bleed; the transparent navbar floats over it) */}
-      <section className="full-bleed relative mb-12 h-[560px] overflow-hidden sm:h-[640px]">
+      {/* 1. Hero — two balanced paths */}
+      <section className="full-bleed relative mb-12 h-[600px] overflow-hidden sm:h-[670px]">
         <Image src={HERO} alt="" fill priority className="object-cover" />
         <div className="hero-overlay absolute inset-0" />
         <div className="absolute inset-0 mx-auto flex max-w-4xl flex-col items-center justify-center px-5 pt-16 text-center text-white">
+          <span className="mb-4 rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-xs font-medium backdrop-blur fade-up">
+            البديل المصري لإيجار المصايف — العين السخنة
+          </span>
           <h1 className="max-w-3xl text-4xl font-bold leading-tight drop-shadow sm:text-5xl fade-up">
-            شاليهك على البحر… بإدارة كاملة ودخل بدون مجهود.
+            وحدتك على بحر السخنة — اعرضها في ٢٠ ثانية، أو سيبها علينا بالكامل.
           </h1>
           <p className="mt-4 max-w-2xl text-base text-white/85 fade-up">
-            وايلد ديكسي إسكيبس بتدير وحدتك في العين السخنة من الألف للياء — تسعير، ضيوف، نظافة، تصاريح البوابة، وتحصيل عبر إنستاباي. وانت بتستلم كشف شهري واضح، مع تملّك كامل وموافقة على كل حجز.
+            استورد وحدتك من Airbnb في ٢٠ ثانية، والمستأجر يحجز ويدفع العربون عندنا بأمان. اعرض بنفسك مجانًا، أو اختار الإدارة الكاملة وريّح بالك تمامًا.
           </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 fade-up">
-            <Link href="#estimator" className="btn-primary px-6 py-3 text-base">احسب دخل وحدتك مجانًا</Link>
-            <Link href="#how" className="btn-outline border-white/40 bg-white/10 px-6 py-3 text-base text-white hover:bg-white/20">اعرف إزاي بنشتغل</Link>
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3 fade-up">
+            <Link href={listHref} className="btn-primary px-6 py-3 text-base">اعرض وحدتك مجانًا</Link>
+            <Link href="#manage" className="btn-outline border-white/40 bg-white/10 px-6 py-3 text-base text-white hover:bg-white/20">خليها علينا — إدارة كاملة</Link>
           </div>
-          <p className="mt-3 text-xs text-white/70">من غير مقدّم • تقدر تلغي في أي وقت • مرخّص</p>
+          <Link href="/sokhna" className="mt-4 text-sm text-white/80 underline-offset-4 hover:text-white hover:underline fade-up">
+            بتدوّر على شاليه تحجزه؟ اتفرّج على السخنة ←
+          </Link>
         </div>
       </section>
 
       <div className="mx-auto max-w-6xl px-1">
-        {/* 2. Trust band — "featured on" platform strip (Qualco-style) */}
-        <section className="mb-14 text-center">
-          <p className="text-sm font-medium tracking-wide text-black/45">موثوق من ملّاك العين السخنة — وموزّعون على</p>
+        {/* 2. Distribution / trust band */}
+        <section className="mb-16 text-center">
+          <p className="text-sm font-medium tracking-wide text-black/45">وحدتك تتعرض وتتأجّر — وللإدارة الكاملة بنوزّعها كمان على</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-5 text-black/55 opacity-70 grayscale">
             <span className="flex items-center gap-1.5 text-xl font-bold">
               <span className="text-[#003580]">Booking</span><span className="text-[#009fe3]">.com</span>
@@ -75,12 +92,84 @@ export default function OwnersHome() {
           </div>
         </section>
 
-        {/* 3. How it works */}
-        <section id="how" className="mb-14 scroll-mt-20">
-          <h2 className="mb-2 text-center text-3xl font-bold sm:text-4xl">إزاي بنشتغل؟</h2>
-          <p className="mb-6 text-center text-sm text-black/55">٣ خطوات وانت مرتاح</p>
+        {/* 3. The 20-second import hook — the signature feature */}
+        <section id="list" className="mb-16 scroll-mt-24">
+          <div className="rounded-3xl border border-brand/10 bg-gradient-to-br from-brand-light/50 to-gold-light/40 p-6 sm:p-10">
+            <div className="text-center">
+              <span className="text-sm font-semibold tracking-wide text-gold-dark">من غير تعب ولا إرهاق</span>
+              <h2 className="mt-1 text-3xl font-bold sm:text-4xl">من Airbnb لوايلد ديكسي في ٢٠ ثانية</h2>
+              <p className="mx-auto mt-2 max-w-xl text-sm text-black/60">عندك إعلان على Airbnb؟ الصق اللينك وإحنا بنبني وحدتك عندك — بالصور والوصف والمرافق — أوتوماتيك.</p>
+            </div>
+
+            {/* Tangible "paste your link" affordance */}
+            <Link href={listHref} className="mx-auto mt-6 flex max-w-xl items-center gap-2 rounded-2xl border border-brand/15 bg-white p-2 shadow-[var(--shadow-soft)] transition hover:border-gold">
+              <span className="flex-1 truncate px-3 text-sm text-black/40" dir="ltr">https://www.airbnb.com/rooms/…</span>
+              <span className="btn-primary whitespace-nowrap text-sm">استورد وحدتك</span>
+            </Link>
+
+            <div className="mt-8 grid gap-5 sm:grid-cols-3">
+              {IMPORT_STEPS.map((s) => (
+                <div key={s.n} className="rounded-2xl bg-white/70 p-5 text-center">
+                  <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-2xl bg-gold text-lg font-bold text-brand-dark">{s.n}</div>
+                  <h3 className="font-bold">{s.t}</h3>
+                  <p className="mt-1.5 text-sm text-black/60">{s.d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 4. Two paths — list yourself vs. full management */}
+        <section className="mb-16">
+          <div className="mb-6 text-center">
+            <h2 className="text-3xl font-bold sm:text-4xl">انت عايز إيه لوحدتك؟</h2>
+            <p className="mt-2 text-sm text-black/55">مسارين — اختار اللي يريّحك، وتقدر تبدّل أي وقت.</p>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-2">
+            {/* Self-list */}
+            <div className="flex flex-col rounded-3xl border-2 border-gold bg-white p-7 shadow-[var(--shadow-soft)]">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-brand">اعرض بنفسك</h3>
+                <span className="rounded-full bg-gold-light px-3 py-1 text-xs font-bold text-gold-dark">مجانًا</span>
+              </div>
+              <p className="mt-2 text-sm text-black/60">وحدتك تتعرض وتتحجز عندنا، وانت بتستقبل وتدير بنفسك. عمولة بسيطة على الحجز بس — من غير اشتراك.</p>
+              <ul className="mt-4 space-y-2.5 border-t border-brand/[0.07] pt-4 text-sm">
+                {["استورد من Airbnb في ٢٠ ثانية", "وحدتك تتعرض على آلاف الباحثين", "المستأجر يحجز ويدفع عربون عبر وايلد ديكسي", "انت تستقبل وتنسّق مع الضيف", "عمولة على الحجز بس — من غير اشتراك"].map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check />
+                    <span className="text-black/70">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href={listHref} className="btn-primary mt-6 w-full text-center">ابدأ مجانًا</Link>
+            </div>
+
+            {/* Full management */}
+            <div className="flex flex-col rounded-3xl border border-brand/10 bg-brand p-7 text-white shadow-[var(--shadow-soft)]">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold">خليها علينا</h3>
+                <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-gold">من ١٥٪</span>
+              </div>
+              <p className="mt-2 text-sm text-white/75">سيبلنا التشغيل بالكامل واستلم دخلك وانت مرتاح — إدارة بمستوى فندقي لوحدتك.</p>
+              <ul className="mt-4 space-y-2.5 border-t border-white/10 pt-4 text-sm">
+                {["تسعير ديناميكي وتسويق متعدد المنصّات", "تواصل الضيوف وتأكيد الحجوزات", "نظافة وتجهيز موثّقين بالصور", "تصاريح البوابة وأمان الكمبوند", "تحصيل وكشف شهري شفّاف"].map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check gold />
+                    <span className="text-white/85">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="#pricing" className="btn mt-6 w-full bg-gold text-center text-brand-dark hover:brightness-95">شوف الباكدجات</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. How the marketplace flow works */}
+        <section id="how" className="mb-16 scroll-mt-24">
+          <h2 className="mb-2 text-center text-3xl font-bold sm:text-4xl">إزاي بتشتغل؟</h2>
+          <p className="mb-6 text-center text-sm text-black/55">٣ خطوات من وحدتك فاضية لدخل في جيبك</p>
           <div className="grid gap-5 sm:grid-cols-3">
-            {STEPS.map((s) => (
+            {FLOW.map((s) => (
               <div key={s.n} className="card p-6 text-center">
                 <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-gold text-xl font-bold text-brand-dark">{s.n}</div>
                 <h3 className="font-bold">{s.t}</h3>
@@ -90,17 +179,36 @@ export default function OwnersHome() {
           </div>
         </section>
 
-        {/* 9/4. Estimator */}
-        <section id="estimator" className="mb-14 scroll-mt-20">
+        {/* 6. Earnings estimator */}
+        <section id="estimator" className="mb-16 scroll-mt-24">
           <h2 className="mb-2 text-center text-3xl font-bold sm:text-4xl">اعرف دخل وحدتك المتوقّع</h2>
           <p className="mb-6 text-center text-sm text-black/55">املا البيانات وفريقنا هيتواصل معاك على واتساب — من غير أي التزام.</p>
           <EarningsEstimator />
         </section>
 
-        {/* 5. Services — dark full-bleed carousel */}
+        {/* 7. Featured stays — the marketplace, live */}
+        {featured.length > 0 && (
+          <section className="mb-16">
+            <div className="mb-4 flex items-baseline justify-between">
+              <h2 className="text-2xl font-bold sm:text-3xl">شاليهات معروضة دلوقتي في السخنة</h2>
+              <Link href="/sokhna" className="text-sm font-medium text-aqua">شوف الكل ←</Link>
+            </div>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {featured.slice(0, 3).map((p) => <PropertyCard key={p.id} p={p} />)}
+            </div>
+          </section>
+        )}
+
+        {/* 8. Full-management — services carousel */}
+        <section id="manage" className="scroll-mt-24">
+          <div className="mb-1 text-center">
+            <span className="text-sm font-semibold tracking-wide text-gold-dark">للي عايز يريّح باله</span>
+            <h2 className="mt-1 text-3xl font-bold sm:text-4xl">الإدارة الكاملة — سيبها علينا</h2>
+          </div>
+        </section>
         <ServicesCarousel />
 
-        {/* Image + text feature blocks */}
+        {/* Image + text feature blocks (the management value) */}
         <section className="mb-16 space-y-16">
           <FeatureBlock
             image="https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1000&q=80"
@@ -126,13 +234,13 @@ export default function OwnersHome() {
           />
         </section>
 
-        {/* 6. Stats band (frameless) */}
-        <section className="full-bleed mb-14 bg-brand py-12 text-white">
+        {/* Stats band */}
+        <section className="full-bleed mb-16 bg-brand py-12 text-white">
           <div className="mx-auto grid max-w-6xl gap-6 px-4 text-center sm:grid-cols-3">
             {[
-              ["+٩–١٠ شهور", "تأجير في السنة — السخنة قريبة من القاهرة وطلبها قوي طول السنة، مش موسم واحد."],
-              ["١٠٠٪", "شفافية في الكشف الشهري — إجمالي، عمولة، وصافي جنب بعض."],
-              ["كل جنيه", "عبر حساب مُدار — تحصيل وتوثيق عبر إنستاباي، مفيش كاش بيلف."],
+              ["٢٠ ثانية", "وكفاية عشان تعرض وحدتك — استورد من Airbnb بلينك واحد."],
+              ["+٩–١٠ شهور", "تأجير في السنة — السخنة قريبة من القاهرة وطلبها قوي طول السنة."],
+              ["١٠٠٪", "شفافية — حجز وتحصيل وكشف عبر إنستاباي، مفيش كاش بيلف."],
             ].map(([big, small]) => (
               <div key={big}>
                 <p className="text-3xl font-bold text-gold">{big}</p>
@@ -142,50 +250,37 @@ export default function OwnersHome() {
           </div>
         </section>
 
-        {/* 7. Featured stays */}
-        {featured.length > 0 && (
-          <section className="mb-14">
-            <div className="mb-4 flex items-baseline justify-between">
-              <h2 className="text-2xl font-bold sm:text-3xl">شاليهات مختارة في العين السخنة</h2>
-              <Link href="/sokhna" className="text-sm font-medium text-aqua">شوف الكل ←</Link>
-            </div>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {featured.slice(0, 3).map((p) => <PropertyCard key={p.id} p={p} />)}
-            </div>
-          </section>
-        )}
-
-        {/* Full-bleed image banner with overlaid text (parallax on scroll) */}
+        {/* Parallax banner */}
         <section
-          className="full-bleed relative mb-14 flex min-h-[380px] items-center justify-center overflow-hidden bg-cover bg-fixed bg-center"
+          className="full-bleed relative mb-16 flex min-h-[380px] items-center justify-center overflow-hidden bg-cover bg-fixed bg-center"
           style={{ backgroundImage: "url(https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1700&q=80)" }}
         >
           <div className="absolute inset-0 bg-brand/70" />
           <div className="relative z-10 mx-auto max-w-2xl px-5 text-center text-white">
             <p className="text-sm font-semibold tracking-wide text-gold">وايلد ديكسي إسكيبس</p>
             <h2 className="mt-2 text-3xl font-bold leading-snug text-white sm:text-4xl">
-              وحدتك على البحر تستاهل إدارة بمستوى فندقي
+              اعرض وحدتك دلوقتي… أو سيبها علينا بالكامل
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-white/80">
-              سيبلنا التشغيل بالكامل — تسعير، ضيوف، نظافة، وتحصيل عبر إنستاباي — واستلم دخلك كل شهر مع كشف واضح.
+              ابدأ مجانًا في ٢٠ ثانية، والمستأجر يحجز ويدفع عندك بأمان. ولو عايز راحة كاملة، إحنا بنتولّى التشغيل من الألف للياء.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Link href="#estimator" className="btn-primary px-6 py-3">احسب دخلك مجانًا</Link>
+              <Link href={listHref} className="btn-primary px-6 py-3">اعرض وحدتك مجانًا</Link>
               <a href="https://wa.me/201033388003" target="_blank" rel="noopener noreferrer" className="btn bg-white px-6 py-3 text-brand hover:bg-white/90">كلّمنا واتساب</a>
             </div>
           </div>
         </section>
 
-        {/* Packages */}
+        {/* Packages — full management only */}
         <Pricing />
 
-        {/* 8. Testimonials */}
-        <section className="mb-14">
+        {/* Testimonials */}
+        <section className="mb-16">
           <h2 className="mb-6 text-center text-3xl font-bold sm:text-4xl">المُلّاك بيقولوا إيه</h2>
           <div className="grid gap-5 sm:grid-cols-3">
             {[
-              ["أ", "م. أحمد — القاهرة", "وحدتي في أزها كانت قاعدة طول السنة. دلوقتي بتكسب وأنا مش بعمل حاجة، والكشف بيوصلني آخر كل شهر."],
-              ["س", "سارة — مقيمة بالخارج", "كنت خايفة أسلّم المفتاح. التوثيق بالصور والكشف الشهري طمّنوني تمامًا."],
+              ["أ", "م. أحمد — القاهرة", "عرضت وحدتي في أزها في دقايق باللينك بتاع Airbnb. أول حجز جه نفس الأسبوع، والفلوس وصلتني عبر إنستاباي."],
+              ["س", "سارة — مقيمة بالخارج", "اخترت الإدارة الكاملة. التوثيق بالصور والكشف الشهري طمّنوني تمامًا وأنا بعيدة."],
               ["ك", "م. كريم — مستثمر", "التسعير الديناميكي رفع دخلي بشكل واضح في الويك-إند والمواسم."],
             ].map(([initial, who, quote]) => (
               <div key={who} className="card p-6">
@@ -204,14 +299,14 @@ export default function OwnersHome() {
           </div>
         </section>
 
-        {/* Owner CTA band (frameless) */}
-        <section className="full-bleed mb-14 bg-gold py-12 text-center text-brand-dark">
+        {/* Dual CTA band */}
+        <section className="full-bleed mb-16 bg-gold py-12 text-center text-brand-dark">
           <div className="mx-auto max-w-4xl px-4">
             <h2 className="text-2xl font-bold sm:text-3xl">وحدتك قاعدة فاضية؟ خلّيها تكسب.</h2>
-            <p className="mt-1 text-sm text-brand-dark/75">سيبلنا الباقي — استلم دخلك وانت مرتاح.</p>
+            <p className="mt-1 text-sm text-brand-dark/75">اعرضها بنفسك مجانًا، أو سيبها علينا بالكامل — انت تختار.</p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
-              <Link href="#estimator" className="btn-navy px-6 py-3">احسب دخلك مجانًا</Link>
-              <a href="https://wa.me/201033388003" target="_blank" rel="noopener noreferrer" className="btn px-6 py-3 bg-white text-brand hover:bg-white/90">كلّمنا واتساب</a>
+              <Link href={listHref} className="btn-navy px-6 py-3">اعرض وحدتك مجانًا</Link>
+              <Link href="#pricing" className="btn bg-white px-6 py-3 text-brand hover:bg-white/90">باكدجات الإدارة</Link>
             </div>
           </div>
         </section>
@@ -233,5 +328,13 @@ export default function OwnersHome() {
         </section>
       </div>
     </div>
+  );
+}
+
+function Check({ gold }: { gold?: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className={`mt-0.5 shrink-0 ${gold ? "text-gold" : "text-gold-dark"}`} aria-hidden>
+      <path d="m5 12 4 4 10-10" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
