@@ -10,6 +10,8 @@ import logging
 import random
 from urllib.parse import urlparse
 
+import httpx
+
 from app.core.config import settings
 from app.core.exceptions import ExternalServiceError
 from app.schemas.airbnb import ImportedListing
@@ -128,6 +130,28 @@ async def _fetch_html(url: str, *, timeout_ms: int = 30_000) -> tuple[str, str]:
         ) from exc
 
 
+def _http_headers() -> dict[str, str]:
+    return {
+        "User-Agent": random.choice(_USER_AGENTS),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9,ar;q=0.8",
+        "Cache-Control": "no-cache",
+        "Upgrade-Insecure-Requests": "1",
+    }
+
+
+async def _fetch_html_http(url: str, *, timeout: float = 25.0) -> tuple[str, str]:
+    """Plain HTTP fetch (no browser). Airbnb serves its SEO/Open-Graph HTML to
+    ordinary clients, which carries the title, photos, capacity, and more — so
+    this works without Chromium and from hosts where a full browser can't run."""
+    proxy = settings.SCRAPER_PROXY.strip() or None
+    async with httpx.AsyncClient(
+        follow_redirects=True, timeout=timeout, headers=_http_headers(), proxy=proxy
+    ) as client:
+        resp = await client.get(url)
+        return resp.text, str(resp.url)
+
+
 # Junk titles Airbnb serves on its anti-bot "challenge" page.
 _JUNK_TITLES = {"control", "airbnb", ""}
 
@@ -162,28 +186,48 @@ def _completeness(listing: ImportedListing) -> int:
 async def import_from_airbnb(url: str, *, max_attempts: int | None = None) -> ImportedListing:
     """Scrape an Airbnb listing fully automatically.
 
-    Airbnb sometimes serves a degraded anti-bot page. We retry with a fresh
-    browser fingerprint until we get a complete listing, keeping the best
-    attempt as a fallback so the host never sees an empty result.
+    Strategy: try a fast plain-HTTP fetch first (no browser needed — works on
+    cloud hosts and is quick). Only if that comes back blocked/degraded do we
+    fall back to a stealth headless browser (when one is installed). The best
+    partial attempt is kept so the host never sees a totally empty result.
     """
     attempts = max_attempts or settings.SCRAPER_MAX_ATTEMPTS
     best: ImportedListing | None = None
-    for attempt in range(1, attempts + 1):
-        html, final_url = await _fetch_html(url)
-        listing = parse_airbnb_html(html, final_url)
+
+    def _consider(listing: ImportedListing) -> ImportedListing | None:
+        nonlocal best
         listing.source_url = url
-
         if not _looks_blocked(listing):
-            logger.info("Airbnb import succeeded on attempt %s for %s", attempt, url)
             return listing
-
         if best is None or _completeness(listing) > _completeness(best):
             best = listing
-        logger.info("Airbnb attempt %s/%s looked blocked for %s; retrying.", attempt, attempts, url)
+        return None
 
-    if best is None or (best.title is None and not best.images):
-        raise ExternalServiceError(
-            "Airbnb blocked the request after several tries. Please paste the "
-            "details manually, or try again in a moment."
-        )
-    return best
+    # 1) Fast path — plain HTTP (no browser).
+    for attempt in range(1, attempts + 1):
+        try:
+            html, final_url = await _fetch_html_http(url)
+        except Exception as exc:  # noqa: BLE001 - network/proxy errors, keep trying
+            logger.warning("Airbnb HTTP fetch attempt %s failed: %s", attempt, exc)
+            continue
+        good = _consider(parse_airbnb_html(html, final_url))
+        if good is not None:
+            logger.info("Airbnb import via HTTP on attempt %s for %s", attempt, url)
+            return good
+
+    # 2) Fallback — headless browser, if one is available (handles JS challenges).
+    try:
+        html, final_url = await _fetch_html(url)
+        good = _consider(parse_airbnb_html(html, final_url))
+        if good is not None:
+            logger.info("Airbnb import via browser for %s", url)
+            return good
+    except ExternalServiceError as exc:
+        logger.info("Browser fallback unavailable/blocked for %s: %s", url, exc)
+
+    if best is not None and (best.title or best.images):
+        return best
+    raise ExternalServiceError(
+        "Could not fetch the Airbnb listing. The link may be invalid or "
+        "temporarily blocked. Please try again or enter the details manually."
+    )
