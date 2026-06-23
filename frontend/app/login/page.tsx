@@ -41,7 +41,7 @@ export default function LoginPage() {
   return (
     <AuthShell title="تسجيل الدخول" subtitle="أهلاً بعودتك — سجّل دخولك للمتابعة">
       <form onSubmit={submit} className="space-y-3">
-        <LabeledInput icon={PhoneIcon} placeholder="رقم الموبايل (01xxxxxxxxx)" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <LabeledInput icon={PhoneIcon} type="tel" inputMode="tel" placeholder="رقم الموبايل (01xxxxxxxxx)" value={phone} onChange={(e) => setPhone(e.target.value)} />
         <LabeledInput icon={LockIcon} type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} />
 
         <div className="flex items-center justify-between pt-1 text-sm">

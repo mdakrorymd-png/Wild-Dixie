@@ -28,6 +28,17 @@ h1, h2, .font-display {
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+/* This is an RTL app, but Latin/numeric fields (password, phone, email, codes…)
+   must type left-to-right so characters and punctuation don't visually reorder. */
+input[type="password"],
+input[type="tel"],
+input[type="email"],
+input[type="number"],
+input[type="url"] {
+  direction: ltr;
+  text-align: left;
+}
+
 /* Clean print/PDF of statements: hide site chrome, white background. */
 @media print {
   header, footer, .no-print { display: none !important; }

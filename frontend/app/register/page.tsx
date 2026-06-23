@@ -66,7 +66,7 @@ export default function RegisterPage() {
       {step === "form" ? (
         <form onSubmit={doRegister} className="space-y-3">
           <LabeledInput icon={UserIcon} placeholder="الاسم الكامل" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-          <LabeledInput icon={PhoneIcon} placeholder="رقم الموبايل (01xxxxxxxxx)" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <LabeledInput icon={PhoneIcon} type="tel" inputMode="tel" placeholder="رقم الموبايل (01xxxxxxxxx)" value={phone} onChange={(e) => setPhone(e.target.value)} />
           <LabeledInput icon={LockIcon} type="password" placeholder="كلمة المرور (8 أحرف على الأقل)" value={password} onChange={(e) => setPassword(e.target.value)} />
           {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <button className="btn-primary w-full" disabled={busy}>
@@ -78,6 +78,8 @@ export default function RegisterPage() {
           {hint && <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">{hint}</p>}
           <input
             className="input text-center text-lg tracking-[0.5em]"
+            dir="ltr"
+            inputMode="numeric"
             placeholder="••••••"
             value={code}
             onChange={(e) => setCode(e.target.value)}
