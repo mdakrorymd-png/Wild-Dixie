@@ -16,7 +16,7 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
                 <path d="M2 11c2.5 0 2.5 2 5 2s2.5-2 5-2 2.5 2 5 2 2.5-2 5-2" stroke="white" strokeWidth="2" strokeLinecap="round" opacity=".6" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold leading-snug">إجازتك على البحر تبدأ من ساحل</h2>
+            <h2 className="text-2xl font-bold leading-snug">إجازتك على البحر تبدأ من وايلد ديكسي</h2>
             <p className="mt-1 text-sm text-white/80">شاليهات وفيلات في الساحل الشمالي، السخنة، والجونة.</p>
           </div>
         </div>

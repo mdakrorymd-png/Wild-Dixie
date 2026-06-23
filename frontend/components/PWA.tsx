@@ -46,7 +46,7 @@ export function PWA() {
       <div className="flex w-full max-w-md items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 shadow-[var(--shadow-hover)]">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-white">🌊</span>
         <div className="flex-1 text-sm">
-          <p className="font-bold">ثبّت تطبيق ساحل</p>
+          <p className="font-bold">ثبّت تطبيق وايلد ديكسي</p>
           <p className="text-black/55">أضِفه إلى شاشتك الرئيسية لتجربة أسرع.</p>
         </div>
         <button

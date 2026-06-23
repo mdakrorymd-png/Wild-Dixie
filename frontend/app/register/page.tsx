@@ -34,7 +34,7 @@ export default function RegisterPage() {
     setError(null);
     try {
       const res = await api.register({ phone_number: phone, full_name: fullName, password });
-      if (res.debug_otp) setHint(`رمز التطوير: ${res.debug_otp}`);
+      if (res.debug_otp) setHint(`كود التحقق (وضع تجربة): ${res.debug_otp}`);
       setStep("otp");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "فشل إنشاء الحساب");
@@ -61,7 +61,7 @@ export default function RegisterPage() {
   return (
     <AuthShell
       title={step === "form" ? "إنشاء حساب" : "تأكيد رقمك"}
-      subtitle={step === "form" ? "انضم إلى ساحل في دقيقة" : `أدخل الرمز المُرسل إلى ${phone}`}
+      subtitle={step === "form" ? "انضم إلى وايلد ديكسي في دقيقة" : `أدخل الرمز المُرسل إلى ${phone}`}
     >
       {step === "form" ? (
         <form onSubmit={doRegister} className="space-y-3">

@@ -21,8 +21,9 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 def _maybe_debug_otp(code: str) -> str | None:
-    """Surface the OTP in the response only outside production."""
-    return None if settings.is_production else code
+    """Surface the OTP in the response outside production — or when explicitly
+    enabled for a demo deployment that has no real SMS gateway yet."""
+    return code if (not settings.is_production or settings.EXPOSE_DEBUG_OTP) else None
 
 
 @router.post("/register", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)

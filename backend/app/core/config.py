@@ -50,6 +50,9 @@ class Settings(BaseSettings):
 
     # ---- SMS ----
     SMS_PROVIDER: str = "console"
+    # Surface the OTP in the API response even in production. For demo/testing
+    # deployments with no real SMS gateway yet — turn OFF once SMS is wired.
+    EXPOSE_DEBUG_OTP: bool = False
 
     # ---- Airbnb scraper ----
     SCRAPER_MAX_ATTEMPTS: int = 3
