@@ -11,5 +11,6 @@ PyJWT==2.10.1
 bcrypt==4.2.1
 python-multipart==0.0.20
 httpx==0.28.1
-playwright==1.49.1
-playwright-stealth==1.0.6
+# playwright is optional (browser fallback for the importer). Omitted from the
+# serverless deploy — the HTTP-first scrape needs no browser. `pip install
+# playwright playwright-stealth` locally if you want the fallback.

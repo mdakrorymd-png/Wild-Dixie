@@ -4,7 +4,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_serializer, field_validator
 
 from app.models.enums import UserRole
 from app.utils.validators import normalize_egyptian_phone, validate_national_id
@@ -49,6 +49,14 @@ class UserRead(BaseModel):
     is_phone_verified: bool
     is_active: bool
     created_at: datetime
+
+    @field_serializer("national_id")
+    def _mask_national_id(self, v: str | None) -> str | None:
+        """Never expose the full government ID over the API — only confirm it is
+        on file by showing the last 3 digits (kept truthy for 'is it set?' UI)."""
+        if not v:
+            return v
+        return "•" * max(0, len(v) - 3) + v[-3:]
 
 
 class NationalIdUpdate(BaseModel):

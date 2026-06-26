@@ -28,8 +28,8 @@ const FLOW = [
 ];
 
 const FAQ: [string, string][] = [
-  ["إيه الفرق بين «اعرض بنفسك» و«الإدارة الكاملة»؟", "اعرض بنفسك: مجانًا — وحدتك تتعرض وتتحجز عندنا، وانت بتستقبل وتدير بنفسك، وبناخد عمولة بسيطة على الحجز بس. الإدارة الكاملة: إحنا بنتولّى كل حاجة (ضيوف، نظافة، بوابة، تحصيل) مقابل باكدج شهري."],
-  ["العرض بيكلّف كام؟", "العرض مجاني تمامًا — مفيش اشتراك ولا مقدّم. بناخد عمولة بسيطة على الحجوزات اللي بتتمّ عبرنا بس."],
+  ["إيه الفرق بين «اعرض بنفسك» و«الإدارة الكاملة»؟", "اعرض بنفسك: مجانًا — وحدتك تتعرض وتتحجز عندنا، وانت بتستقبل وتدير بنفسك، وبناخد عمولة ١٠٪ على الحجز بس. الإدارة الكاملة: إحنا بنتولّى كل حاجة (ضيوف، نظافة، بوابة، تحصيل) مقابل باكدج شهري."],
+  ["العرض بيكلّف كام؟", "العرض مجاني تمامًا — مفيش اشتراك ولا مقدّم. بناخد عمولة ١٠٪ على الحجوزات اللي بتتمّ عبرنا بس."],
   ["إزاي بستورد من Airbnb؟", "الصق رابط إعلانك، وإحنا بنسحب الصور والوصف والمرافق وعدد الضيوف تلقائيًا — تراجعهم وتنشر في دقايق من غير تعب."],
   ["المستأجر بيدفع إزاي؟", "الحجز والعربون عبر وايلد ديكسي (إنستاباي / فودافون كاش) — آمن وموثّق، وانت بتشوف كل حاجة في لوحتك."],
   ["الإدارة الكاملة فيها إيه؟", "تسعير، تواصل الضيوف، نظافة موثّقة بالصور، تصاريح البوابة، صيانة، وتحصيل — وانت بتستلم كشف شهري. تبدأ من ١٥٪."],
@@ -52,7 +52,7 @@ export default function Home() {
     <div>
       {/* 1. Hero — two balanced paths */}
       <section className="full-bleed relative mb-12 h-[600px] overflow-hidden sm:h-[670px]">
-        <Image src={HERO} alt="" fill priority className="object-cover" />
+        <Image src={HERO} alt="شاليه على بحر العين السخنة وقت الغروب" fill priority className="object-cover" />
         <div className="hero-overlay absolute inset-0" />
         <div className="absolute inset-0 mx-auto flex max-w-4xl flex-col items-center justify-center px-5 pt-16 text-center text-white">
           <span className="mb-4 rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-xs font-medium backdrop-blur fade-up">
@@ -132,9 +132,9 @@ export default function Home() {
                 <h3 className="text-xl font-bold text-brand">اعرض بنفسك</h3>
                 <span className="rounded-full bg-gold-light px-3 py-1 text-xs font-bold text-gold-dark">مجانًا</span>
               </div>
-              <p className="mt-2 text-sm text-black/60">وحدتك تتعرض وتتحجز عندنا، وانت بتستقبل وتدير بنفسك. عمولة بسيطة على الحجز بس — من غير اشتراك.</p>
+              <p className="mt-2 text-sm text-black/60">وحدتك تتعرض وتتحجز عندنا، وانت بتستقبل وتدير بنفسك. عمولة ١٠٪ على الحجز بس — من غير اشتراك.</p>
               <ul className="mt-4 space-y-2.5 border-t border-brand/[0.07] pt-4 text-sm">
-                {["استورد من Airbnb في ٢٠ ثانية", "وحدتك تتعرض على آلاف الباحثين", "المستأجر يحجز ويدفع عربون عبر وايلد ديكسي", "انت تستقبل وتنسّق مع الضيف", "عمولة على الحجز بس — من غير اشتراك"].map((f) => (
+                {["استورد من Airbnb في ٢٠ ثانية", "وحدتك تتعرض على آلاف الباحثين", "المستأجر يحجز ويدفع عربون عبر وايلد ديكسي", "انت تستقبل وتنسّق مع الضيف", "عمولة ١٠٪ على الحجز بس — من غير اشتراك"].map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check />
                     <span className="text-black/70">{f}</span>

@@ -59,7 +59,7 @@ export function Pricing() {
         <p className="mx-auto mt-2 max-w-xl text-sm text-black/55">
           للي عايز يسيب التشغيل علينا بالكامل — من غير مقدّم وتجربة قابلة للإلغاء. مش عايز إدارة؟{" "}
           <Link href="/#list" className="font-semibold text-gold-dark underline-offset-2 hover:underline">اعرض وحدتك مجانًا</Link>{" "}
-          وادفع عمولة على الحجز بس.
+          وادفع عمولة ١٠٪ على الحجز بس.
         </p>
       </div>
       <div className="mt-8 grid gap-5 lg:grid-cols-3">

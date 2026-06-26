@@ -13,8 +13,7 @@ export function Footer() {
               <span className="block text-[10px] tracking-[0.28em] text-gold">ESCAPES</span>
             </span>
           </div>
-          <p className="mt-3 text-sm text-white/60">إدارة فندقية متكاملة لوحدتك الساحلية في العين السخنة — وانت بتستلم دخلك.</p>
-          <p className="mt-3 text-xs text-white/50">مرخّص — وزارة السياحة</p>
+          <p className="mt-3 text-sm text-white/60">اعرض وحدتك الساحلية في العين السخنة في ٢٠ ثانية، أو سيبها علينا بالكامل — وانت بتستلم دخلك.</p>
         </div>
 
         <div>

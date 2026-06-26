@@ -1,4 +1,5 @@
 """Async SQLAlchemy engine, session factory, and the declarative Base."""
+import os
 from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import (
@@ -7,16 +8,24 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
 
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.ENVIRONMENT == "development",
-    pool_pre_ping=True,
-    future=True,
-    connect_args=settings.db_connect_args,
-)
+_engine_kwargs: dict = {
+    "echo": settings.ENVIRONMENT == "development",
+    "future": True,
+    "connect_args": settings.db_connect_args,
+}
+# On serverless (Vercel), don't keep a connection pool across invocations — each
+# cold instance would otherwise hold idle Postgres connections and exhaust the
+# (small) free-tier limit. NullPool opens/closes per request instead.
+if os.getenv("VERCEL"):
+    _engine_kwargs["poolclass"] = NullPool
+else:
+    _engine_kwargs["pool_pre_ping"] = True
+
+engine = create_async_engine(settings.DATABASE_URL, **_engine_kwargs)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

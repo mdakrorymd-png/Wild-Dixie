@@ -123,7 +123,7 @@ export function EarningsEstimator() {
             <div>
               <p className="text-xs text-white/60">الدخل الشهري المتوقّع</p>
               <p className="text-3xl font-bold text-gold">
-                {fmt(est.grossLo)}–{fmt(est.grossHi)} <span className="text-base font-normal text-white/70">ج.م</span>
+                <bdi dir="ltr">{fmt(est.grossLo)}–{fmt(est.grossHi)}</bdi> <span className="text-base font-normal text-white/70">ج.م</span>
               </p>
               <div className="mt-3 space-y-1 text-sm">
                 <div className="flex justify-between">
@@ -139,7 +139,7 @@ export function EarningsEstimator() {
             </div>
             <form onSubmit={submit} className="mt-4 space-y-2">
               <input className="input bg-white/95 text-brand" placeholder="اسمك" value={name} onChange={(e) => setName(e.target.value)} required />
-              <input className="input bg-white/95 text-brand" placeholder="رقم الواتساب" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} required />
+              <input className="input bg-white/95 text-brand" type="tel" inputMode="tel" placeholder="رقم الواتساب" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} required />
               <button className="btn-primary w-full" disabled={busy}>
                 {busy ? "..." : "احجز استشارة مجانية"}
               </button>
