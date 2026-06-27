@@ -11,6 +11,7 @@ from app.schemas.auth import (
     MessageResponse,
     PhoneRequest,
     RefreshRequest,
+    ResetPasswordRequest,
     TokenPair,
     VerifyOtpRequest,
 )
@@ -48,6 +49,23 @@ async def resend_otp(payload: PhoneRequest, db: DbSession) -> MessageResponse:
         message="A new verification code has been sent.",
         debug_otp=_maybe_debug_otp(code),
     )
+
+
+@router.post("/forgot-password", response_model=MessageResponse)
+async def forgot_password(payload: PhoneRequest, db: DbSession) -> MessageResponse:
+    code = await auth_service.request_password_reset(db, payload.phone_number)
+    return MessageResponse(
+        message="A password reset code has been sent.",
+        debug_otp=_maybe_debug_otp(code),
+    )
+
+
+@router.post("/reset-password", response_model=TokenPair)
+async def reset_password(payload: ResetPasswordRequest, db: DbSession) -> TokenPair:
+    _user, tokens = await auth_service.reset_password(
+        db, payload.phone_number, payload.code, payload.new_password
+    )
+    return tokens
 
 
 @router.post("/login", response_model=TokenPair)

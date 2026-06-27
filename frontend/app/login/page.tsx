@@ -49,7 +49,7 @@ export default function LoginPage() {
             <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="accent-brand" />
             تذكّرني
           </label>
-          <span className="cursor-not-allowed text-black/35">نسيت كلمة المرور؟</span>
+          <Link href="/forgot-password" className="text-brand hover:underline">نسيت كلمة المرور؟</Link>
         </div>
 
         {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}

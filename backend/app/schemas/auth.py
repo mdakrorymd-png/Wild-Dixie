@@ -44,6 +44,24 @@ class VerifyOtpRequest(BaseModel):
         return v
 
 
+class ResetPasswordRequest(BaseModel):
+    phone_number: str
+    code: str = Field(..., min_length=4, max_length=8)
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+    @field_validator("phone_number")
+    @classmethod
+    def _normalize_phone(cls, v: str) -> str:
+        return normalize_egyptian_phone(v)
+
+    @field_validator("code")
+    @classmethod
+    def _digits_only(cls, v: str) -> str:
+        if not v.isdigit():
+            raise ValueError("OTP code must be numeric.")
+        return v
+
+
 class RefreshRequest(BaseModel):
     refresh_token: str
 

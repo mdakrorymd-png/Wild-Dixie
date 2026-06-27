@@ -107,6 +107,35 @@ async def login(db: AsyncSession, phone_number: str, password: str) -> tuple[Use
     return user, _issue_token_pair(user)
 
 
+async def request_password_reset(db: AsyncSession, phone_number: str) -> str:
+    """Issue a password-reset OTP for an existing account."""
+    user = await get_user_by_phone(db, phone_number)
+    if user is None:
+        raise NotFoundError("No account found for this phone number.")
+    return await otp_service.issue_otp(
+        db,
+        user_id=user.id,
+        phone_number=user.phone_number,
+        purpose=OtpPurpose.PASSWORD_RESET,
+    )
+
+
+async def reset_password(
+    db: AsyncSession, phone_number: str, code: str, new_password: str
+) -> tuple[User, TokenPair]:
+    """Verify the reset OTP, set the new password, and sign the user in."""
+    user = await get_user_by_phone(db, phone_number)
+    if user is None:
+        raise NotFoundError("No account found for this phone number.")
+    await otp_service.verify_otp(
+        db, user_id=user.id, purpose=OtpPurpose.PASSWORD_RESET, code=code
+    )
+    user.hashed_password = hash_secret(new_password)
+    # Resetting via an OTP also proves control of the phone number.
+    user.is_phone_verified = True
+    return user, _issue_token_pair(user)
+
+
 async def refresh_access_token(db: AsyncSession, refresh_token: str) -> str:
     try:
         payload = decode_token(refresh_token, expected_type="refresh")

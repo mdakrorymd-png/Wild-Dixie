@@ -78,6 +78,10 @@ export const api = {
     request<TokenPair>("/auth/verify-phone", { method: "POST", body: JSON.stringify(body) }),
   login: (body: { phone_number: string; password: string }) =>
     request<TokenPair>("/auth/login", { method: "POST", body: JSON.stringify(body) }),
+  forgotPassword: (body: { phone_number: string }) =>
+    request<MessageResponse>("/auth/forgot-password", { method: "POST", body: JSON.stringify(body) }),
+  resetPassword: (body: { phone_number: string; code: string; new_password: string }) =>
+    request<TokenPair>("/auth/reset-password", { method: "POST", body: JSON.stringify(body) }),
   me: () => request<User>("/users/me"),
   setNationalId: (national_id: string) =>
     request<User>("/users/me/national-id", { method: "PATCH", body: JSON.stringify({ national_id }) }),
