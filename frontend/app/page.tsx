@@ -78,7 +78,7 @@ export default function Home() {
         {/* 2. Distribution / trust band */}
         <section className="mb-16 text-center">
           <p className="text-sm font-medium tracking-wide text-black/45">وحدتك تتعرض وتتأجّر — وللإدارة الكاملة بنوزّعها كمان على</p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-5 text-black/55 opacity-70 grayscale">
+          <div dir="ltr" className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-5 text-black/55 opacity-70 grayscale">
             <span className="flex items-center gap-1.5 text-xl font-bold">
               <span className="text-[#003580]">Booking</span><span className="text-[#009fe3]">.com</span>
             </span>
@@ -86,9 +86,6 @@ export default function Home() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2c2.5 0 3.8 2.3 5 5 1.3 2.8 3 6.4 3 9a4 4 0 0 1-7 2.6A4 4 0 0 1 4 16c0-2.6 1.7-6.2 3-9 1.2-2.7 2.5-5 5-5Zm0 9a2.5 2.5 0 0 0-2.3 1.6c-.4 1 .1 2 .9 2.6.8.6 2 .6 2.8 0 .8-.6 1.3-1.6.9-2.6A2.5 2.5 0 0 0 12 11Z" /></svg>
               airbnb
             </span>
-            <span className="text-xl font-bold italic">Vrbo</span>
-            <span className="text-xl font-semibold">Expedia</span>
-            <span className="text-xl font-medium">agoda</span>
           </div>
         </section>
 
