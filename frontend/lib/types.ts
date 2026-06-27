@@ -21,6 +21,7 @@ export interface User {
   passport_image: string | null;
   instapay_handle: string | null;
   vodafone_cash_number: string | null;
+  wallet_provider: string | null;
   roles: Role[];
   is_phone_verified: boolean;
   is_active: boolean;

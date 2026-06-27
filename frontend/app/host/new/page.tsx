@@ -46,9 +46,13 @@ export default function NewListingPage() {
   const [fromImport, setFromImport] = useState<string | null>(null);
   const [authGate, setAuthGate] = useState(false);
   const [authKeys, setAuthKeys] = useState(false);
+  const [customResort, setCustomResort] = useState("");
+  const [customAmenity, setCustomAmenity] = useState("");
+  const [importedAmenities, setImportedAmenities] = useState<string[]>([]);
 
   useEffect(() => {
-    api.resorts().then(setResorts).catch(() => undefined);
+    // Only the Suez corridor (Ain Sokhna -> Zaafarana), alphabetical from the API.
+    api.resorts({ governorate: "Suez" }).then(setResorts).catch(() => undefined);
     api.amenities().then(setAmenities).catch(() => undefined);
 
     const raw = sessionStorage.getItem("import_prefill");
@@ -65,6 +69,7 @@ export default function NewListingPage() {
           bathrooms: d.bathrooms ?? f.bathrooms,
         }));
         setImages(d.images.slice(0, 20));
+        setImportedAmenities(d.amenities ?? []);
         setFromImport(d.source_url);
       } catch {
         /* ignore */
@@ -72,6 +77,14 @@ export default function NewListingPage() {
       sessionStorage.removeItem("import_prefill");
     }
   }, []);
+
+  // Pre-select catalog amenities that match the ones imported from Airbnb.
+  useEffect(() => {
+    if (!amenities.length || !importedAmenities.length) return;
+    const want = new Set(importedAmenities.map((n) => n.toLowerCase()));
+    const ids = amenities.filter((a) => want.has(a.name.toLowerCase())).map((a) => a.id);
+    if (ids.length) setPicked(new Set(ids));
+  }, [amenities, importedAmenities]);
 
   if (loading) return <p className="text-black/50">…</p>;
   if (!user?.roles.includes("host"))
@@ -91,7 +104,7 @@ export default function NewListingPage() {
     try {
       const body: Record<string, unknown> = {
         ...form,
-        resort_id: form.resort_id || null,
+        resort_id: form.resort_id && form.resort_id !== "__new__" ? form.resort_id : null,
         base_price_per_night: Number(form.base_price_per_night),
         cleaning_fee: Number(form.cleaning_fee || 0),
         security_deposit: Number(form.security_deposit || 0),
@@ -107,6 +120,32 @@ export default function NewListingPage() {
       setError(e instanceof ApiError ? e.message : "تعذّر الحفظ");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function addCustomResort() {
+    const name = customResort.trim();
+    if (!name) return;
+    try {
+      const r = await api.createResort({ name, area: "Ain Sokhna" });
+      setResorts((prev) => (prev.some((x) => x.id === r.id) ? prev : [...prev, r]));
+      set("resort_id", r.id);
+      setCustomResort("");
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "تعذّر إضافة القرية");
+    }
+  }
+
+  async function addCustomAmenity() {
+    const name = customAmenity.trim();
+    if (!name) return;
+    try {
+      const a = await api.createAmenity({ name });
+      setAmenities((prev) => (prev.some((x) => x.id === a.id) ? prev : [...prev, a]));
+      setPicked((prev) => new Set(prev).add(a.id));
+      setCustomAmenity("");
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "تعذّر إضافة المرفق");
     }
   }
 
@@ -152,15 +191,31 @@ export default function NewListingPage() {
           <Field label="المنطقة">
             <input className="input" placeholder="الساحل الشمالي" value={form.area} onChange={(e) => set("area", e.target.value)} />
           </Field>
-          <Field label="القرية / الريزورت">
+          <Field label="القرية / الكمبوند">
             <select className="input" value={form.resort_id} onChange={(e) => set("resort_id", e.target.value)}>
               <option value="">— اختر —</option>
-              {resorts.map((r) => (
-                <option key={r.id} value={r.id}>{r.name}</option>
-              ))}
+              {[...resorts]
+                .sort((a, b) => (a.name_ar ?? a.name).localeCompare(b.name_ar ?? b.name, "ar"))
+                .map((r) => (
+                  <option key={r.id} value={r.id}>{r.name_ar ?? r.name}</option>
+                ))}
+              <option value="__new__">+ قريتي مش في القائمة…</option>
             </select>
           </Field>
         </div>
+
+        {form.resort_id === "__new__" && (
+          <div className="flex gap-2 rounded-xl bg-brand-light/40 p-3">
+            <input
+              className="input"
+              placeholder="اكتب اسم القرية / الكمبوند"
+              value={customResort}
+              onChange={(e) => setCustomResort(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomResort(); } }}
+            />
+            <button type="button" onClick={addCustomResort} className="btn-primary whitespace-nowrap">إضافة القرية</button>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Num label="ضيوف" v={form.max_guests} on={(n) => set("max_guests", n)} />
@@ -185,7 +240,7 @@ export default function NewListingPage() {
         </div>
 
         <div>
-          <p className="mb-2 text-xs font-medium text-black/50">المرافق</p>
+          <p className="mb-2 text-xs font-medium text-black/50">المرافق — اضغط للإضافة/الإزالة، أو أضف مرفق مش موجود</p>
           <div className="flex flex-wrap gap-2">
             {amenities.map((a) => (
               <button
@@ -197,6 +252,16 @@ export default function NewListingPage() {
                 {a.name}
               </button>
             ))}
+          </div>
+          <div className="mt-3 flex gap-2">
+            <input
+              className="input"
+              placeholder="أضف مرفق (مثلاً: جاكوزي، بلايستيشن…)"
+              value={customAmenity}
+              onChange={(e) => setCustomAmenity(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomAmenity(); } }}
+            />
+            <button type="button" onClick={addCustomAmenity} className="btn-outline whitespace-nowrap">+ إضافة</button>
           </div>
         </div>
 

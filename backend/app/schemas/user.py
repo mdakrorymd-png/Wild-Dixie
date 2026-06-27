@@ -45,6 +45,7 @@ class UserRead(BaseModel):
     passport_image: str | None
     instapay_handle: str | None
     vodafone_cash_number: str | None
+    wallet_provider: str | None = None
     roles: list[UserRole]
     is_phone_verified: bool
     is_active: bool
@@ -74,3 +75,4 @@ class ProfileUpdate(BaseModel):
     passport_image: str | None = Field(None, max_length=1000)
     instapay_handle: str | None = Field(None, max_length=100)
     vodafone_cash_number: str | None = Field(None, max_length=20)
+    wallet_provider: str | None = Field(None, max_length=30)

@@ -150,11 +150,36 @@ _DESC_BOILERPLATE = ("service animals aren", "emotional support animal", "this c
 def _clean_description(raw: str | None) -> str | None:
     if not raw:
         return None
-    cleaned = raw.replace("\\u003c", "<").replace("\\u003e", ">").replace("<br>", "\n")
+    cleaned = (
+        raw.replace("\\n", "\n")
+        .replace("\\u003c", "<")
+        .replace("\\u003e", ">")
+        .replace("<br/>", "\n")
+        .replace("<br>", "\n")
+    )
     cleaned = re.sub(r"<[^>]+>", "", cleaned).strip()
-    if not cleaned or any(m in cleaned.lower() for m in _DESC_BOILERPLATE):
+    if len(cleaned) < 12 or any(m in cleaned.lower() for m in _DESC_BOILERPLATE):
         return None
     return cleaned
+
+
+def _best_description(html: str) -> str | None:
+    """Pick the richest description available. The og:description meta is only a
+    ~160-char teaser, so prefer the full text embedded in Airbnb's page JSON."""
+    candidates: list[str] = []
+    for raw in (
+        _json_first(html, ("localizedDescription",)),
+        _json_first(html, ("htmlText",)),
+        _json_first(html, ("description",)),
+        _meta_content(html, "og:description"),
+    ):
+        cleaned = _clean_description(raw)
+        if cleaned and cleaned not in candidates:
+            candidates.append(cleaned)
+    if not candidates:
+        return None
+    # The longest candidate is the real, full listing description.
+    return max(candidates, key=len)
 
 
 def parse_airbnb_html(html: str, source_url: str) -> ImportedListing:
@@ -168,10 +193,7 @@ def parse_airbnb_html(html: str, source_url: str) -> ImportedListing:
         _json_first(html, ("localizedListingName", "listingTitle", "pdpTitle", "name"))
         or _meta_content(html, "og:title")
     )
-    description = _clean_description(
-        _meta_content(html, "og:description")
-        or _json_first(html, ("localizedDescription", "htmlText", "description"))
-    )
+    description = _best_description(html)
 
     images = [img for img in _all_meta_content(html, "og:image") if "/im/pictures/" in img]
     images.extend(img for img in _gallery_images(html) if img not in images)
@@ -186,7 +208,9 @@ def parse_airbnb_html(html: str, source_url: str) -> ImportedListing:
     latitude = _float_match(html, "lat")
     longitude = _float_match(html, "lng")
 
-    amenities = _scan_amenities(" ".join(filter(None, [description or "", html[:300_000]])))
+    # Scan only the title + real description (not the whole page) so we don't
+    # pick up amenity keywords that merely appear in Airbnb's UI chrome/scripts.
+    amenities = _scan_amenities(" ".join(filter(None, [title or "", description or ""])))
 
     listing = ImportedListing(
         source_url=source_url,

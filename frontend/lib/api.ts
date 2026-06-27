@@ -87,13 +87,17 @@ export const api = {
   me: () => request<User>("/users/me"),
   setNationalId: (national_id: string) =>
     request<User>("/users/me/national-id", { method: "PATCH", body: JSON.stringify({ national_id }) }),
-  updateProfile: (body: { passport_image?: string; instapay_handle?: string; vodafone_cash_number?: string }) =>
+  updateProfile: (body: { passport_image?: string; instapay_handle?: string; vodafone_cash_number?: string; wallet_provider?: string }) =>
     request<User>("/users/me", { method: "PATCH", body: JSON.stringify(body) }),
   becomeHost: () => request<User>("/users/me/become-host", { method: "POST" }),
 
   // ---- catalog ----
-  resorts: (params: { area?: string; q?: string } = {}) =>
+  resorts: (params: { area?: string; governorate?: string; q?: string } = {}) =>
     request<Resort[]>(`/catalog/resorts${qs(params)}`),
+  createResort: (body: { name: string; area?: string }) =>
+    request<Resort>("/catalog/resorts", { method: "POST", body: JSON.stringify(body) }),
+  createAmenity: (body: { name: string }) =>
+    request<{ id: string; name: string; category: string; icon: string | null }>("/catalog/amenities", { method: "POST", body: JSON.stringify(body) }),
   destinations: () => request<Destination[]>("/catalog/destinations"),
 
   // ---- leads (owner estimator + waitlist) ----

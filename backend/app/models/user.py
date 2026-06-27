@@ -27,9 +27,11 @@ class User(UUIDMixin, TimestampMixin, Base):
     # Passport image URL for foreign guests (who have no Egyptian National ID).
     passport_image: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
-    # Host payout handles for receiving InstaPay / Vodafone Cash transfers.
+    # Host payout handles for receiving InstaPay / mobile-wallet transfers.
     instapay_handle: Mapped[str | None] = mapped_column(String(100), nullable=True)
     vodafone_cash_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    # Wallet provider for the number above (Vodafone Cash / Orange Cash / etc.).
+    wallet_provider: Mapped[str | None] = mapped_column(String(30), nullable=True)
 
     roles: Mapped[list[UserRole]] = mapped_column(
         ARRAY(_user_role_enum),
