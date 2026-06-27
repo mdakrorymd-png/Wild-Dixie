@@ -76,6 +76,8 @@ export const api = {
     request<MessageResponse>("/auth/register", { method: "POST", body: JSON.stringify(body) }),
   verifyPhone: (body: { phone_number: string; code: string }) =>
     request<TokenPair>("/auth/verify-phone", { method: "POST", body: JSON.stringify(body) }),
+  resendOtp: (body: { phone_number: string }) =>
+    request<MessageResponse>("/auth/resend-otp", { method: "POST", body: JSON.stringify(body) }),
   login: (body: { phone_number: string; password: string }) =>
     request<TokenPair>("/auth/login", { method: "POST", body: JSON.stringify(body) }),
   forgotPassword: (body: { phone_number: string }) =>

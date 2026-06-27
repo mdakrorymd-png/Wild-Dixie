@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 
 const SIDE = "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=900&q=80";
 
@@ -35,10 +38,33 @@ export function LabeledInput({
   icon,
   ...props
 }: { icon: React.ReactNode } & React.InputHTMLAttributes<HTMLInputElement>) {
+  const [show, setShow] = useState(false);
+  const isPassword = props.type === "password";
+  const type = isPassword ? (show ? "text" : "password") : props.type;
+
   return (
     <div className="flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 transition focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/10">
       <span className="text-black/30">{icon}</span>
-      <input {...props} className="w-full bg-transparent py-2.5 text-sm outline-none" />
+      <input {...props} type={type} className="w-full bg-transparent py-2.5 text-sm outline-none" />
+      {isPassword && (
+        <button
+          type="button"
+          onClick={() => setShow((s) => !s)}
+          aria-label={show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+          className="shrink-0 text-black/35 transition hover:text-black/60"
+        >
+          {show ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.4 5.2A9.5 9.5 0 0 1 12 5c5 0 9 4.5 10 7-.4 1-1.3 2.4-2.6 3.6M6.2 6.2C4.2 7.5 2.7 9.5 2 12c1 2.5 5 7 10 7 1.4 0 2.7-.3 3.9-.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          )}
+        </button>
+      )}
     </div>
   );
 }

@@ -59,6 +59,16 @@ export default function RegisterPage() {
     }
   }
 
+  async function resend() {
+    setError(null);
+    try {
+      const res = await api.resendOtp({ phone_number: phone });
+      setHint(res.debug_otp ? `كود التحقق (وضع تجربة): ${res.debug_otp}` : "تم إرسال كود جديد ✓");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "تعذّر إعادة إرسال الكود");
+    }
+  }
+
   return (
     <AuthShell
       title={step === "form" ? "إنشاء حساب" : "تأكيد رقمك"}
@@ -91,6 +101,9 @@ export default function RegisterPage() {
           </button>
           <button type="button" onClick={() => setStep("form")} className="btn-outline w-full">
             رجوع
+          </button>
+          <button type="button" onClick={resend} className="w-full text-center text-sm text-brand hover:underline">
+            إعادة إرسال الكود
           </button>
         </form>
       )}
