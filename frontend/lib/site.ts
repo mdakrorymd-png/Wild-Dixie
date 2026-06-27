@@ -3,5 +3,5 @@
 // Defaults to the live production domain so previews work even when
 // NEXT_PUBLIC_SITE_URL isn't set; override it for a custom domain.
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://wild-dixie.vercel.app"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.wilddixie.com"
 ).replace(/\/$/, "");
