@@ -37,3 +37,6 @@ next-env.d.ts
 Thumbs.db
 .vscode/
 .idea/
+
+.vercel
+.env*

@@ -56,10 +56,11 @@ export function Navbar() {
                 </span>
                 <span className="max-w-[80px] truncate">{user.full_name.split(" ")[0]}</span>
               </Link>
-              <button onClick={logout} aria-label="خروج" className={`rounded-full p-2 transition ${overHero ? "text-white/70 hover:text-white" : "text-black/40 hover:bg-black/5"}`}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <button onClick={logout} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition ${overHero ? "text-white/70 hover:text-white" : "text-black/50 hover:bg-black/5 hover:text-black/80"}`}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                   <path d="M15 12H3m0 0 4-4m-4 4 4 4M21 4v16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
+                خروج
               </button>
             </>
           ) : (
@@ -89,6 +90,12 @@ export function Navbar() {
                 {isHost && <MobileLink href="/host" label="عقاراتي" onClick={() => setOpen(false)} />}
                 {isAdmin && <MobileLink href="/admin" label="الإدارة" onClick={() => setOpen(false)} />}
                 <MobileLink href="/profile" label="حسابي" onClick={() => setOpen(false)} />
+                <button
+                  onClick={() => { setOpen(false); logout(); }}
+                  className="rounded-lg px-3 py-2.5 text-right text-sm text-red-600/80 transition hover:bg-red-50"
+                >
+                  خروج من الحساب
+                </button>
               </>
             ) : (
               <MobileLink href="/login" label="دخول" onClick={() => setOpen(false)} />

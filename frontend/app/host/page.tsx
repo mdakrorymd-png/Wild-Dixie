@@ -13,7 +13,7 @@ export default function HostPage() {
   const { user, loading } = useAuth();
   const [listings, setListings] = useState<Property[]>([]);
   const [payouts, setPayouts] = useState<{ total_pending: string; total_paid: string } | null>(null);
-  const [url, setUrl] = useState("https://www.airbnb.com/rooms/12345678");
+  const [url, setUrl] = useState("");
   const [imported, setImported] = useState<ImportedListing | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -70,11 +70,17 @@ export default function HostPage() {
       </div>
 
       <div className="card border-brand/40 bg-brand-light/40 p-5">
-        <h2 className="font-medium">استورد قائمتك من Airbnb</h2>
-        <p className="mt-1 text-sm text-black/50">الصق رابط الإعلان، وإحنا بنجيب الصور والوصف والمرافق.</p>
+        <h2 className="font-medium">استورد قائمتك من Airbnb في ٢٠ ثانية</h2>
+        <p className="mt-1 text-sm text-black/50">الصق رابط الإعلان من Airbnb (مثال: https://www.airbnb.com/rooms/12345678)، وإحنا بنجيب الصور والوصف والمرافق تلقائيًا.</p>
         <div className="mt-3 flex gap-2">
-          <input className="input ltr:text-left" dir="ltr" value={url} onChange={(e) => setUrl(e.target.value)} />
-          <button onClick={runImport} disabled={busy} className="btn-primary whitespace-nowrap disabled:opacity-50">
+          <input
+            className="input ltr:text-left"
+            dir="ltr"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://www.airbnb.com/rooms/..."
+          />
+          <button onClick={runImport} disabled={busy || !url.trim()} className="btn-primary whitespace-nowrap disabled:opacity-50">
             {busy ? "…" : "استيراد"}
           </button>
         </div>

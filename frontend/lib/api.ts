@@ -106,7 +106,7 @@ export const api = {
   amenities: () => request<{ id: string; name: string; category: string; icon: string | null }[]>("/catalog/amenities"),
 
   // ---- properties ----
-  searchProperties: (params: Record<string, unknown> = {}) =>
+  searchProperties: (params: { area?: string; q?: string; listing_type?: string; min_price?: number; max_price?: number; guests?: number; limit?: number; offset?: number } = {}) =>
     request<Page<PropertyListItem>>(`/properties${qs(params)}`),
   getProperty: (id: string) => request<Property>(`/properties/${id}`),
   importAirbnb: (url: string) =>

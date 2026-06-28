@@ -43,12 +43,12 @@ async def register(db: AsyncSession, payload: UserRegister) -> tuple[User, str]:
     Returns the user and the plain OTP code (for dev surfacing only).
     """
     if await get_user_by_phone(db, payload.phone_number) is not None:
-        raise ConflictError("An account with this phone number already exists.")
+        raise ConflictError("حساب مسجّل بهذا الرقم بالفعل.")
 
     if payload.email is not None:
         existing_email = await db.execute(select(User.id).where(User.email == payload.email))
         if existing_email.first() is not None:
-            raise ConflictError("An account with this email already exists.")
+            raise ConflictError("حساب مسجّل بهذا البريد الإلكتروني بالفعل.")
 
     user = User(
         phone_number=payload.phone_number,
@@ -72,9 +72,9 @@ async def register(db: AsyncSession, payload: UserRegister) -> tuple[User, str]:
 async def resend_phone_verification(db: AsyncSession, phone_number: str) -> str:
     user = await get_user_by_phone(db, phone_number)
     if user is None:
-        raise NotFoundError("No account found for this phone number.")
+        raise NotFoundError("لا يوجد حساب بهذا الرقم.")
     if user.is_phone_verified:
-        raise ConflictError("Phone number is already verified.")
+        raise ConflictError("هذا الرقم مُفعَّل بالفعل.")
     return await otp_service.issue_otp(
         db,
         user_id=user.id,
@@ -86,7 +86,7 @@ async def resend_phone_verification(db: AsyncSession, phone_number: str) -> str:
 async def verify_phone(db: AsyncSession, phone_number: str, code: str) -> tuple[User, TokenPair]:
     user = await get_user_by_phone(db, phone_number)
     if user is None:
-        raise NotFoundError("No account found for this phone number.")
+        raise NotFoundError("لا يوجد حساب بهذا الرقم.")
 
     await otp_service.verify_otp(
         db, user_id=user.id, purpose=OtpPurpose.PHONE_VERIFICATION, code=code
@@ -99,11 +99,11 @@ async def login(db: AsyncSession, phone_number: str, password: str) -> tuple[Use
     user = await get_user_by_phone(db, phone_number)
     # Uniform error to avoid leaking which phones are registered.
     if user is None or not verify_secret(password, user.hashed_password):
-        raise AuthError("Invalid phone number or password.")
+        raise AuthError("رقم الهاتف أو كلمة المرور غير صحيحة.")
     if not user.is_active:
-        raise AuthError("This account is disabled.")
+        raise AuthError("هذا الحساب موقوف. تواصل مع الدعم.")
     if not user.is_phone_verified:
-        raise AuthError("Phone number is not verified yet.")
+        raise AuthError("الرقم لم يُفعَّل بعد — تحقق من رمز الـ OTP.")
     return user, _issue_token_pair(user)
 
 
@@ -111,7 +111,7 @@ async def request_password_reset(db: AsyncSession, phone_number: str) -> str:
     """Issue a password-reset OTP for an existing account."""
     user = await get_user_by_phone(db, phone_number)
     if user is None:
-        raise NotFoundError("No account found for this phone number.")
+        raise NotFoundError("لا يوجد حساب بهذا الرقم.")
     return await otp_service.issue_otp(
         db,
         user_id=user.id,
@@ -126,7 +126,7 @@ async def reset_password(
     """Verify the reset OTP, set the new password, and sign the user in."""
     user = await get_user_by_phone(db, phone_number)
     if user is None:
-        raise NotFoundError("No account found for this phone number.")
+        raise NotFoundError("لا يوجد حساب بهذا الرقم.")
     await otp_service.verify_otp(
         db, user_id=user.id, purpose=OtpPurpose.PASSWORD_RESET, code=code
     )

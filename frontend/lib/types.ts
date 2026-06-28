@@ -1,4 +1,5 @@
 export type Role = "guest" | "host" | "admin";
+export type ListingType = "self_list" | "managed";
 
 export type PropertyType = "chalet" | "villa" | "apartment" | "studio" | "cabin" | "room";
 export type PropertyStatus = "draft" | "pending_review" | "published" | "rejected" | "suspended";
@@ -114,6 +115,7 @@ export interface PropertyListItem {
   max_guests: number;
   bedrooms: number;
   status: PropertyStatus;
+  listing_type: ListingType;
 }
 
 export interface Property extends PropertyListItem {

@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
-from app.models.enums import ListingSource, PropertyStatus, PropertyType
+from app.models.enums import ListingSource, ListingType, PropertyStatus, PropertyType
 from app.schemas.catalog import AmenityRead, ResortRead
 
 
@@ -52,6 +52,8 @@ class _PropertyBase(BaseModel):
 
     min_nights: int = Field(1, ge=1, le=365)
     max_nights: int | None = Field(None, ge=1, le=365)
+
+    listing_type: ListingType = ListingType.SELF_LIST  # nullable DB col; defaults to self_list
 
     # Egypt: utilities are paid separately by the guest (kept true by policy).
     utilities_paid_by_guest: bool = True
@@ -112,6 +114,7 @@ class PropertyRead(_PropertyBase):
     currency: str
     status: PropertyStatus
     source: ListingSource
+    listing_type: ListingType = ListingType.SELF_LIST
     source_url: str | None
     rejection_reason: str | None
     created_at: datetime
@@ -134,6 +137,7 @@ class PropertyListItem(BaseModel):
     max_guests: int
     bedrooms: int
     status: PropertyStatus
+    listing_type: ListingType = ListingType.SELF_LIST
 
 
 class RejectRequest(BaseModel):

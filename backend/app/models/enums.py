@@ -43,6 +43,11 @@ class ListingSource(str, enum.Enum):
     AIRBNB_IMPORT = "airbnb_import"
 
 
+class ListingType(str, enum.Enum):
+    SELF_LIST = "self_list"   # المالك بيدير بنفسه — عمولة ١٠٪
+    MANAGED = "managed"       # وايلد ديكسي بتدير — الباكدجات ١٥٪/٢٠٪/٢٨٪
+
+
 class DayStatus(str, enum.Enum):
     """Status of a single calendar night. AVAILABLE is implicit (no stored row)."""
 

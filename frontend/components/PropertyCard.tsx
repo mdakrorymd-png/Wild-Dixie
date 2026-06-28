@@ -5,6 +5,7 @@ import { egp, propertyTypeAr } from "@/lib/format";
 import { coverImage } from "@/lib/images";
 
 export function PropertyCard({ p }: { p: PropertyListItem }) {
+  const isManaged = p.listing_type === "managed";
   return (
     <Link
       href={`/properties/${p.id}`}
@@ -20,6 +21,15 @@ export function PropertyCard({ p }: { p: PropertyListItem }) {
         />
         <span className="absolute right-3 top-3 badge bg-brand/95 text-white backdrop-blur">
           {propertyTypeAr(p.property_type)}
+        </span>
+        <span
+          className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold shadow-sm ${
+            isManaged
+              ? "bg-gold text-brand-dark"
+              : "bg-white/85 text-brand backdrop-blur"
+          }`}
+        >
+          {isManaged ? "مُدارة بالكامل" : "اعرض بنفسك"}
         </span>
         <span className="absolute bottom-3 left-3 rounded-full bg-gold px-3 py-1 text-sm font-bold text-brand-dark shadow-sm">
           {egp(p.base_price_per_night)} <span className="font-normal text-brand-dark/75">/ ليلة</span>

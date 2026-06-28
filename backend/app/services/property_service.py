@@ -31,7 +31,7 @@ async def _load_amenities(db: AsyncSession, amenity_ids: list[uuid.UUID]) -> lis
     found = {a.id for a in amenities}
     missing = set(amenity_ids) - found
     if missing:
-        raise ValidationError_(f"Unknown amenity ids: {', '.join(str(m) for m in missing)}")
+        raise ValidationError_(f"مرافق غير موجودة: {', '.join(str(m) for m in missing)}")
     return amenities
 
 
@@ -39,7 +39,7 @@ async def _validate_resort(db: AsyncSession, resort_id: uuid.UUID | None) -> Non
     if resort_id is None:
         return
     if await db.get(Resort, resort_id) is None:
-        raise ValidationError_("Unknown resort_id.")
+        raise ValidationError_("القرية / الكمبوند غير موجود.")
 
 
 def _build_images(images: list[PropertyImageIn]) -> list[PropertyImage]:
@@ -77,14 +77,14 @@ async def create_property(db: AsyncSession, host: User, payload: PropertyCreate)
 async def get_property(db: AsyncSession, property_id: uuid.UUID) -> Property:
     prop = await db.get(Property, property_id)
     if prop is None:
-        raise NotFoundError("Property not found.")
+        raise NotFoundError("العقار غير موجود.")
     return prop
 
 
 async def get_public_property(db: AsyncSession, property_id: uuid.UUID) -> Property:
     prop = await get_property(db, property_id)
     if prop.status != PropertyStatus.PUBLISHED:
-        raise NotFoundError("Property not found.")
+        raise NotFoundError("العقار غير موجود.")
     return prop
 
 
@@ -93,7 +93,7 @@ async def get_owned_property(
 ) -> Property:
     prop = await get_property(db, property_id)
     if prop.host_id != host.id:
-        raise PermissionError_("You do not own this property.")
+        raise PermissionError_("لا تملك هذا العقار.")
     return prop
 
 
@@ -102,7 +102,7 @@ async def update_property(
 ) -> Property:
     if prop.status not in _EDITABLE_STATUSES:
         raise ValidationError_(
-            "Only draft or rejected listings can be edited. Contact support to change a live listing."
+            "لا يمكن تعديل إعلان منشور — تواصل معنا لتعديل قائمة مباشرة."
         )
 
     data = payload.model_dump(exclude_unset=True, exclude={"amenity_ids", "images"})
@@ -126,9 +126,9 @@ async def delete_property(db: AsyncSession, prop: Property) -> None:
 
 async def submit_for_review(db: AsyncSession, prop: Property) -> Property:
     if prop.status not in _EDITABLE_STATUSES:
-        raise ValidationError_("Only draft or rejected listings can be submitted for review.")
+        raise ValidationError_("يمكن إرسال المسودات فقط للمراجعة.")
     if not prop.images:
-        raise ValidationError_("Add at least one image before submitting for review.")
+        raise ValidationError_("أضف صورة واحدة على الأقل قبل الإرسال للمراجعة.")
     prop.status = PropertyStatus.PENDING_REVIEW
     prop.rejection_reason = None
     await db.flush()
@@ -161,6 +161,7 @@ async def search_properties(
     area: str | None = None,
     resort_id: uuid.UUID | None = None,
     property_type: str | None = None,
+    listing_type: str | None = None,
     min_price: Decimal | None = None,
     max_price: Decimal | None = None,
     guests: int | None = None,
@@ -181,6 +182,8 @@ async def search_properties(
         stmt = stmt.where(Property.resort_id == resort_id)
     if property_type:
         stmt = stmt.where(Property.property_type == property_type)
+    if listing_type:
+        stmt = stmt.where(Property.listing_type == listing_type)
     if min_price is not None:
         stmt = stmt.where(Property.base_price_per_night >= min_price)
     if max_price is not None:
@@ -212,7 +215,7 @@ async def list_pending(
 async def approve_property(db: AsyncSession, property_id: uuid.UUID) -> Property:
     prop = await get_property(db, property_id)
     if prop.status != PropertyStatus.PENDING_REVIEW:
-        raise ValidationError_("Only listings pending review can be approved.")
+        raise ValidationError_("يمكن الموافقة على القوائم قيد المراجعة فقط.")
     prop.status = PropertyStatus.PUBLISHED
     prop.rejection_reason = None
     await db.flush()
@@ -222,7 +225,7 @@ async def approve_property(db: AsyncSession, property_id: uuid.UUID) -> Property
 async def reject_property(db: AsyncSession, property_id: uuid.UUID, reason: str) -> Property:
     prop = await get_property(db, property_id)
     if prop.status != PropertyStatus.PENDING_REVIEW:
-        raise ValidationError_("Only listings pending review can be rejected.")
+        raise ValidationError_("يمكن رفض القوائم قيد المراجعة فقط.")
     prop.status = PropertyStatus.REJECTED
     prop.rejection_reason = reason
     await db.flush()

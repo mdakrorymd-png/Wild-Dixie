@@ -19,6 +19,7 @@ const empty = {
   title: "",
   description: "",
   property_type: "chalet" as PropertyType,
+  listing_type: "self_list" as "self_list" | "managed",
   area: "",
   resort_id: "",
   max_guests: 2,
@@ -179,6 +180,26 @@ export default function NewListingPage() {
         <Field label="الوصف">
           <textarea className="input min-h-24" value={form.description} onChange={(e) => set("description", e.target.value)} />
         </Field>
+
+        <div className="rounded-xl border border-brand/15 bg-brand-light/30 p-4">
+          <p className="mb-2 text-sm font-semibold text-brand">نوع الإدارة</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className={`flex cursor-pointer gap-3 rounded-xl border p-3 transition ${form.listing_type === "self_list" ? "border-brand bg-brand/5" : "border-black/10 bg-white"}`}>
+              <input type="radio" name="listing_type" value="self_list" checked={form.listing_type === "self_list"} onChange={() => set("listing_type", "self_list")} className="mt-0.5 accent-brand" />
+              <div>
+                <p className="font-semibold text-brand">اعرض بنفسك</p>
+                <p className="mt-0.5 text-xs text-black/55">انت بتدير الضيوف والتأجير — عمولة ١٠٪ على الحجز بس.</p>
+              </div>
+            </label>
+            <label className={`flex cursor-pointer gap-3 rounded-xl border p-3 transition ${form.listing_type === "managed" ? "border-gold bg-gold/5" : "border-black/10 bg-white"}`}>
+              <input type="radio" name="listing_type" value="managed" checked={form.listing_type === "managed"} onChange={() => set("listing_type", "managed")} className="mt-0.5 accent-amber-500" />
+              <div>
+                <p className="font-semibold text-amber-800">مُدارة بالكامل من وايلد ديكسي</p>
+                <p className="mt-0.5 text-xs text-black/55">وايلد ديكسي بتدير كل حاجة — تختار باكدج من ١٥٪ لـ٢٨٪.</p>
+              </div>
+            </label>
+          </div>
+        </div>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <Field label="النوع">

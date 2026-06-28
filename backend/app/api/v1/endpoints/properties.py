@@ -8,7 +8,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status
 
 from app.api.deps import CurrentUser, DbSession, require_role
-from app.models.enums import PropertyType, UserRole
+from app.models.enums import ListingType, PropertyType, UserRole
 from app.models.user import User
 from app.schemas.airbnb import AirbnbImportRequest, ImportedListing
 from app.schemas.common import Page
@@ -35,6 +35,7 @@ async def search(
     area: Annotated[str | None, Query()] = None,
     resort_id: Annotated[uuid.UUID | None, Query()] = None,
     property_type: Annotated[PropertyType | None, Query()] = None,
+    listing_type: Annotated[ListingType | None, Query()] = None,
     min_price: Annotated[Decimal | None, Query(ge=0)] = None,
     max_price: Annotated[Decimal | None, Query(ge=0)] = None,
     guests: Annotated[int | None, Query(ge=1)] = None,
@@ -47,6 +48,7 @@ async def search(
         area=area,
         resort_id=resort_id,
         property_type=property_type.value if property_type else None,
+        listing_type=listing_type.value if listing_type else None,
         min_price=min_price,
         max_price=max_price,
         guests=guests,

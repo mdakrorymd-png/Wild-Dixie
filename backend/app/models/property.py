@@ -20,12 +20,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 from app.models.amenity import Amenity, property_amenities
 from app.models.base import TimestampMixin, UUIDMixin, pg_enum
-from app.models.enums import ListingSource, PropertyStatus, PropertyType
+from app.models.enums import ListingSource, ListingType, PropertyStatus, PropertyType
 from app.models.resort import Resort
 
 _property_type_enum = pg_enum(PropertyType, "property_type")
 _property_status_enum = pg_enum(PropertyStatus, "property_status")
 _listing_source_enum = pg_enum(ListingSource, "listing_source")
+_listing_type_enum = pg_enum(ListingType, "listing_type")
 
 
 class Property(UUIDMixin, TimestampMixin, Base):
@@ -85,6 +86,9 @@ class Property(UUIDMixin, TimestampMixin, Base):
     )
     source: Mapped[ListingSource] = mapped_column(
         _listing_source_enum, nullable=False, server_default=text("'manual'")
+    )
+    listing_type: Mapped[ListingType | None] = mapped_column(
+        _listing_type_enum, nullable=True, server_default=text("'self_list'")
     )
     source_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     rejection_reason: Mapped[str | None] = mapped_column(Text, nullable=True)

@@ -3,15 +3,18 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import type { PropertyListItem } from "@/lib/types";
+import type { ListingType, PropertyListItem } from "@/lib/types";
 import { PropertyCard } from "@/components/PropertyCard";
 
 const HERO = "https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1600&q=80";
 const SOON = ["الساحل الشمالي", "الجونة", "مرسى مطروح", "جنوب سيناء"];
 
+type ListingFilter = "all" | ListingType;
+
 export default function SokhnaPage() {
   const [items, setItems] = useState<PropertyListItem[]>([]);
   const [q, setQ] = useState("");
+  const [listingFilter, setListingFilter] = useState<ListingFilter>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [reload, setReload] = useState(0);
@@ -23,7 +26,12 @@ export default function SokhnaPage() {
     setLoading(true);
     const t = setTimeout(() => {
       api
-        .searchProperties({ area: "Ain Sokhna", q: q || undefined, limit: 24 })
+        .searchProperties({
+          area: "Ain Sokhna",
+          q: q || undefined,
+          listing_type: listingFilter !== "all" ? listingFilter : undefined,
+          limit: 24,
+        })
         .then((p) => {
           setItems(p.items);
           setError(false);
@@ -32,7 +40,7 @@ export default function SokhnaPage() {
         .finally(() => setLoading(false));
     }, 200);
     return () => clearTimeout(t);
-  }, [q, reload]);
+  }, [q, listingFilter, reload]);
 
   async function joinWaitlist(e: React.FormEvent) {
     e.preventDefault();
@@ -62,9 +70,29 @@ export default function SokhnaPage() {
       </section>
 
       <div className="mx-auto max-w-6xl px-1">
-        <div className="mb-4 flex items-baseline justify-between">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-bold">شاليهات العين السخنة</h2>
-          <span className="text-sm text-black/55">{items.length} عقار</span>
+          <div className="flex items-center gap-2">
+            <div className="flex overflow-hidden rounded-xl border border-brand/15 bg-white text-sm">
+              {(["all", "self_list", "managed"] as const).map((v) => {
+                const label = v === "all" ? "الكل" : v === "self_list" ? "اعرض بنفسك" : "مُدارة بالكامل";
+                return (
+                  <button
+                    key={v}
+                    onClick={() => setListingFilter(v)}
+                    className={`px-3 py-1.5 transition ${
+                      listingFilter === v
+                        ? "bg-brand text-white font-medium"
+                        : "text-black/60 hover:bg-brand/5"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <span className="text-sm text-black/45">{items.length} عقار</span>
+          </div>
         </div>
 
         {loading ? (
