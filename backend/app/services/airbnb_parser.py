@@ -98,7 +98,9 @@ def _json_int(html: str, keys: tuple[str, ...]) -> int | None:
 
 
 # Junk image paths (favicons, platform UI assets, user avatars) — not listing photos.
-_IMG_JUNK = ("airbnb-platform-assets", "favicon", "/user/", "/cdn-cgi/")
+# Note: Airbnb uses "AirbnbPlatformAssets" (no hyphens) in the URL, so we match
+# the lowercased form "platformassets" to catch both old and new URL shapes.
+_IMG_JUNK = ("platformassets", "airbnb-platform-assets", "favicon", "/user/", "/cdn-cgi/")
 
 
 def _gallery_images(html: str, limit: int = 30) -> list[str]:
