@@ -118,6 +118,82 @@ export interface PropertyListItem {
   listing_type: ListingType;
 }
 
+export interface PriceRule {
+  id: string;
+  property_id: string;
+  label: string;
+  start_date: string;
+  end_date: string;
+  price_per_night: string;
+  min_nights: number | null;
+  priority: number;
+}
+
+export interface PriceRuleCreate {
+  label: string;
+  start_date: string;
+  end_date: string;
+  price_per_night: number;
+  min_nights?: number | null;
+  priority?: number;
+}
+
+export interface NightBreakdown {
+  date: string;
+  price: string;
+}
+
+export interface PriceQuote {
+  property_id: string;
+  check_in: string;
+  check_out: string;
+  nights: number;
+  nights_breakdown: NightBreakdown[];
+  subtotal: string;
+  discount_percent: number;
+  discount_amount: string;
+  cleaning_fee: string;
+  total: string;
+  currency: string;
+  instant_book: boolean;
+}
+
+export interface PricingSettings {
+  base_price_per_night: string;
+  weekend_price_per_night: string | null;
+  cleaning_fee: string;
+  security_deposit: string;
+  weekly_discount: number;
+  monthly_discount: number;
+  early_bird_discount: number;
+  early_bird_days: number;
+  last_minute_discount: number;
+  last_minute_days: number;
+  instant_book: boolean;
+  min_nights: number;
+  max_nights: number | null;
+  down_payment_percentage: number;
+  currency: string;
+  price_rules: PriceRule[];
+}
+
+export interface PricingSettingsUpdate {
+  base_price_per_night?: number;
+  weekend_price_per_night?: number | null;
+  cleaning_fee?: number;
+  security_deposit?: number;
+  weekly_discount?: number;
+  monthly_discount?: number;
+  early_bird_discount?: number;
+  early_bird_days?: number;
+  last_minute_discount?: number;
+  last_minute_days?: number;
+  instant_book?: boolean;
+  min_nights?: number;
+  max_nights?: number | null;
+  down_payment_percentage?: number;
+}
+
 export interface Property extends PropertyListItem {
   host_id: string;
   description: string;

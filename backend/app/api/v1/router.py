@@ -9,6 +9,7 @@ from app.api.v1.endpoints import (
     catalog,
     finance,
     leads,
+    pricing,
     properties,
     users,
 )
@@ -18,6 +19,7 @@ api_router.include_router(auth.router)
 api_router.include_router(users.router)
 api_router.include_router(catalog.router)
 api_router.include_router(properties.router)
+api_router.include_router(pricing.router)
 api_router.include_router(calendar.router)
 api_router.include_router(bookings.router)
 api_router.include_router(finance.router)

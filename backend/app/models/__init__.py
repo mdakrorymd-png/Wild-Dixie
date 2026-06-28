@@ -21,6 +21,7 @@ from app.models.finance import Dispute, Payout
 from app.models.lead import Lead
 from app.models.otp import OtpCode
 from app.models.payment import Payment
+from app.models.pricing import PropertyPriceRule
 from app.models.property import Property, PropertyImage
 from app.models.resort import Resort
 from app.models.user import User
@@ -30,6 +31,7 @@ __all__ = [
     "OtpCode",
     "Property",
     "PropertyImage",
+    "PropertyPriceRule",
     "Amenity",
     "property_amenities",
     "Resort",

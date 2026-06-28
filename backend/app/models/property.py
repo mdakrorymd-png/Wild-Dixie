@@ -21,6 +21,7 @@ from app.core.database import Base
 from app.models.amenity import Amenity, property_amenities
 from app.models.base import TimestampMixin, UUIDMixin, pg_enum
 from app.models.enums import ListingSource, ListingType, PropertyStatus, PropertyType
+from app.models.pricing import PropertyPriceRule
 from app.models.resort import Resort
 
 _property_type_enum = pg_enum(PropertyType, "property_type")
@@ -80,6 +81,20 @@ class Property(UUIDMixin, TimestampMixin, Base):
     # property (prepaid card top-up or deducted from the damage deposit).
     utilities_paid_by_guest: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
 
+    # ---- dynamic pricing ----
+    # Weekend premium (Thu/Fri/Sat in Egypt). NULL = same as base_price.
+    weekend_price_per_night: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
+    # Length-of-stay discounts (0-100 %).
+    weekly_discount: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    monthly_discount: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    # Time-based discounts.
+    early_bird_discount: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    early_bird_days: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("30"))
+    last_minute_discount: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    last_minute_days: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("7"))
+    # Booking flow.
+    instant_book: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
+
     # ---- workflow / provenance ----
     status: Mapped[PropertyStatus] = mapped_column(
         _property_status_enum, nullable=False, server_default=text("'draft'")
@@ -99,6 +114,12 @@ class Property(UUIDMixin, TimestampMixin, Base):
     )
 
     # ---- relationships ----
+    price_rules: Mapped[list["PropertyPriceRule"]] = relationship(  # type: ignore[name-defined]
+        back_populates="property",
+        cascade="all, delete-orphan",
+        order_by="PropertyPriceRule.priority.desc(), PropertyPriceRule.start_date",
+        lazy="selectin",
+    )
     images: Mapped[list["PropertyImage"]] = relationship(
         back_populates="property",
         cascade="all, delete-orphan",

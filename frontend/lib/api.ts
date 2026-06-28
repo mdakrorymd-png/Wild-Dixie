@@ -117,6 +117,22 @@ export const api = {
   submitProperty: (id: string) =>
     request<Property>(`/properties/${id}/submit`, { method: "POST" }),
 
+  // ---- pricing ----
+  getPriceQuote: (id: string, check_in: string, check_out: string) =>
+    request<import("./types").PriceQuote>(`/properties/${id}/quote${qs({ check_in, check_out })}`),
+  getPricingSettings: (id: string) =>
+    request<import("./types").PricingSettings>(`/properties/${id}/pricing`),
+  updatePricingSettings: (id: string, body: Partial<import("./types").PricingSettingsUpdate>) =>
+    request<import("./types").PricingSettings>(`/properties/${id}/pricing`, { method: "PATCH", body: JSON.stringify(body) }),
+  listPriceRules: (id: string) =>
+    request<import("./types").PriceRule[]>(`/properties/${id}/price-rules`),
+  createPriceRule: (id: string, body: import("./types").PriceRuleCreate) =>
+    request<import("./types").PriceRule>(`/properties/${id}/price-rules`, { method: "POST", body: JSON.stringify(body) }),
+  updatePriceRule: (propertyId: string, ruleId: string, body: Partial<import("./types").PriceRuleCreate>) =>
+    request<import("./types").PriceRule>(`/properties/${propertyId}/price-rules/${ruleId}`, { method: "PATCH", body: JSON.stringify(body) }),
+  deletePriceRule: (propertyId: string, ruleId: string) =>
+    request<void>(`/properties/${propertyId}/price-rules/${ruleId}`, { method: "DELETE" }),
+
   // ---- calendar ----
   availability: (id: string, params: { start?: string; end?: string } = {}) =>
     request<AvailabilityResponse>(`/properties/${id}/availability${qs(params)}`),
