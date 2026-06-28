@@ -71,6 +71,12 @@ async def create_property(db: AsyncSession, host: User, payload: PropertyCreate)
 
     db.add(prop)
     await db.flush()
+
+    # Populate the resort relationship from the identity map so Pydantic's sync
+    # model_validate() doesn't trigger an async selectin load (MissingGreenlet crash).
+    if payload.resort_id is not None:
+        prop.resort = await db.get(Resort, payload.resort_id)
+
     return prop
 
 
