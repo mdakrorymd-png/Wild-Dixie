@@ -54,6 +54,11 @@ class Settings(BaseSettings):
     # deployments with no real SMS gateway yet — turn OFF once SMS is wired.
     EXPOSE_DEBUG_OTP: bool = False
 
+    # SMSMisr credentials (required when SMS_PROVIDER=smsmisr)
+    SMSMISR_USERNAME: str = ""
+    SMSMISR_PASSWORD: str = ""
+    SMSMISR_SENDER: str = "Wild Dixie"
+
     # ---- Airbnb scraper ----
     SCRAPER_MAX_ATTEMPTS: int = 3
     # Optional proxy to bypass IP-level blocks, e.g.
