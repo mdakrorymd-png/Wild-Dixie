@@ -24,10 +24,11 @@ const BOOK_STEPS = [
 
 // Why book direct vs. the global platforms.
 const COMPARE: { label: string; us: string; them: string }[] = [
-  { label: "رسوم خدمة إضافية على الضيف", us: "بدون رسوم زيادة", them: "رسوم خدمة بتتضاف على السعر" },
-  { label: "تواصل مع المضيف / الإدارة", us: "مباشر وفوري", them: "عبر المنصة فقط" },
-  { label: "طريقة الدفع", us: "إنستاباي / محفظة / بالجنيه", them: "كارت / دولار غالبًا" },
-  { label: "معرفة بالسخنة ودعم بالعربي", us: "فريق محلي يعرف كل كمبوند", them: "دعم عام بالإنجليزي" },
+  { label: "رسوم خدمة إضافية على الضيف", us: "صفر — السعر واضح ومباشر", them: "١٥-٢٠٪ رسوم بتتضاف على السعر" },
+  { label: "تواصل مع المضيف / الإدارة", us: "واتساب مباشر وفوري", them: "عبر المنصة فقط — ممنوع الاتصال" },
+  { label: "طريقة الدفع", us: "إنستاباي / محفظة / بالجنيه", them: "كارت دولاري أو تحويل دولي" },
+  { label: "معرفة بالسخنة", us: "فريق محلي يعرف كل كمبوند", them: "دعم عام بالإنجليزي" },
+  { label: "تصريح البوابة والكمبوند", us: "بنجيبه لك قبل الوصول", them: "انت مسؤول تتواصل مع المالك" },
 ];
 
 const FAQ: [string, string][] = [
@@ -101,14 +102,15 @@ export default function Home() {
         {/* 3. Why book with Wild Dixie — direct comparison */}
         <section className="mb-16">
           <div className="mb-6 text-center">
+            <span className="mb-2 inline-block text-sm font-semibold tracking-wide text-gold-dark">مقارنة مباشرة</span>
             <h2 className="text-3xl font-bold sm:text-4xl">ليه تحجز من وايلد ديكسي؟</h2>
-            <p className="mt-2 text-sm text-black/55">نفس الشاليه… بأوفر وأوضح من المنصات العالمية.</p>
+            <p className="mt-2 text-sm text-black/55">نفس الشاليه — بأوفر وأوضح وأسرع من المنصات العالمية.</p>
           </div>
           <div className="overflow-hidden rounded-3xl border border-brand/10 bg-white shadow-[var(--shadow-soft)]">
-            <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-px bg-brand/[0.06] text-sm">
-              <div className="bg-white p-4" />
-              <div className="bg-brand p-4 text-center font-bold text-gold">وايلد ديكسي</div>
-              <div dir="ltr" className="bg-white p-4 text-center font-bold text-black/45">Airbnb / Booking</div>
+            <div className="grid grid-cols-[1.6fr_1fr_1fr] gap-px bg-brand/[0.06] text-sm">
+              <div className="bg-white px-5 py-4 text-xs font-medium text-black/35">المعيار</div>
+              <div className="bg-brand px-4 py-4 text-center font-bold text-gold">وايلد ديكسي ✓</div>
+              <div dir="ltr" className="bg-white px-4 py-4 text-center text-xs font-semibold text-black/40">Airbnb / Booking</div>
               {COMPARE.map((row) => (
                 <Row key={row.label} {...row} />
               ))}
@@ -131,19 +133,23 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 5. Guest trust stats */}
-        <section className="full-bleed mb-16 bg-brand py-12 text-white">
-          <div className="mx-auto grid max-w-6xl gap-6 px-4 text-center sm:grid-cols-3">
-            {[
-              ["بدون رسوم", "مفيش رسوم خدمة زيادة زي المنصات العالمية — السعر اللي تشوفه هو اللي تدفعه."],
-              ["تواصل مباشر", "كلّم المضيف أو إدارة وايلد ديكسي على طول — من غير وسيط."],
-              ["دفع بالجنيه", "إنستاباي وفودافون كاش وأورنج — محلي وآمن وموثّق."],
-            ].map(([big, small]) => (
-              <div key={big}>
-                <p className="text-3xl font-bold text-gold">{big}</p>
-                <p className="mt-1 text-sm text-white/70">{small}</p>
-              </div>
-            ))}
+        {/* 5. Big-number trust stats */}
+        <section className="full-bleed mb-16 bg-brand py-16 text-white">
+          <div className="mx-auto max-w-6xl px-4">
+            <p className="mb-10 text-center text-sm font-semibold tracking-widest text-gold/80 uppercase">ليه وايلد ديكسي؟</p>
+            <div className="grid gap-8 text-center sm:grid-cols-3">
+              {[
+                { n: "٠٪", label: "رسوم زيادة على الضيف", sub: "السعر اللي شايفه هو اللي بتدفعه — بدون مفاجآت." },
+                { n: "١٠٪", label: "عمولة الحجز فقط", sub: "للمضيف اللي بيدير وحدته — أقل من أي منصة عالمية." },
+                { n: "٢٤/٧", label: "دعم واتساب بالعربي", sub: "فريق محلي يعرف كل كمبوند وكل بوابة في السخنة." },
+              ].map(({ n, label, sub }) => (
+                <div key={n} className="group">
+                  <p className="text-6xl font-bold text-gold sm:text-7xl">{n}</p>
+                  <p className="mt-2 text-base font-semibold">{label}</p>
+                  <p className="mt-1 text-sm text-white/55">{sub}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 

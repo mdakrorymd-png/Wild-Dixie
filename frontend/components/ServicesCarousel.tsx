@@ -1,62 +1,61 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
 
 type IconName = "pricing" | "marketing" | "listing" | "gate" | "cleaning" | "maintenance" | "report" | "chat";
 
 const SERVICES: { icon: IconName; t: string; d: string }[] = [
-  { icon: "pricing", t: "تسعير ديناميكي", d: "بنرفع السعر في الذروة والويك-إند ونحافظ على الحجوزات في الهدوء — لأقصى دخل لوحدتك." },
+  { icon: "pricing", t: "تسعير ديناميكي", d: "بنرفع السعر في الذروة والويك-إند ونحافظ على الحجوزات في الهدوء — لأقصى دخل." },
   { icon: "marketing", t: "توزيع على المنصات", d: "بننشر وحدتك على Airbnb و Booking وموقعنا المباشر عشان نزوّد الحجوزات." },
   { icon: "listing", t: "تصوير وتحسين القائمة", d: "صور احترافية ووصف محسّن يرفعوا ترتيب وحدتك ويحوّلوا المشاهدات لحجوزات." },
-  { icon: "gate", t: "تصاريح البوابة وأكواد الشاطئ", d: "بندير تطبيق البوابة بإذنك ونصدر تصريح لكل ضيف برقمه القومي ولوحة عربيته." },
+  { icon: "gate", t: "تصاريح البوابة", d: "بندير تطبيق البوابة بإذنك ونصدر تصريح لكل ضيف برقمه القومي ولوحة عربيته." },
   { icon: "cleaning", t: "نظافة وتغيير مفروشات", d: "تنظيف وتجهيز موثّق بالصور قبل وبعد كل ضيف — وحدتك دايمًا زي الفل." },
   { icon: "maintenance", t: "صيانة عند الطلب", d: "شبكة فنيين جاهزة بسقف مصاريف متفق عليه — من غير صداع مكالمات." },
   { icon: "report", t: "كشف شهري شفّاف", d: "إجمالي، عمولة، وصافي جنب بعض — تشوف كل جنيه لحظة بلحظة." },
-  { icon: "chat", t: "تواصل واتساب ٢٤/٧", d: "ردود سريعة على ضيوفك على مدار الساعة — تجربة بتبني تقييمات عالية." },
+  { icon: "chat", t: "دعم واتساب ٢٤/٧", d: "ردود سريعة على ضيوفك على مدار الساعة — تجربة بتبني تقييمات عالية." },
 ];
 
 export function ServicesCarousel() {
-  const ref = useRef<HTMLDivElement>(null);
-  const scroll = (dir: number) => ref.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
-
   return (
-    <section id="services" className="full-bleed mb-14 scroll-mt-24 bg-brand py-14 text-white">
-      <div className="mx-auto mb-8 flex max-w-6xl flex-col items-center gap-3 px-4 text-center">
-        <h2 className="text-3xl font-bold text-white sm:text-4xl">اهتمام بأدق التفاصيل</h2>
-        <p className="max-w-xl text-sm text-white/65">من التسعير لتصاريح البوابة للكشف الشهري — بنغطّي كل حاجة في وحدتك.</p>
-      </div>
-
-      {/* Frameless scroller — cards run edge to edge */}
-      <div ref={ref} className="no-scrollbar flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:px-6">
-        {SERVICES.map((s) => (
-          <article key={s.t} className="w-[290px] shrink-0 snap-start rounded-2xl border border-white/12 bg-white/[0.04] p-6 transition hover:border-gold/50 hover:bg-white/[0.07]">
-            <span className="grid h-12 w-12 place-items-center rounded-xl border border-gold/40 text-gold">
-              <Icon name={s.icon} />
-            </span>
-            <h3 className="mt-4 text-lg font-medium">{s.t}</h3>
-            <p className="mt-2 text-sm leading-7 text-white/65">{s.d}</p>
-          </article>
-        ))}
-      </div>
-
-      <div className="mx-auto mt-8 flex max-w-6xl flex-col items-center gap-5 px-4">
-        <div className="flex items-center gap-3">
-          <button onClick={() => scroll(1)} aria-label="السابق" className="grid h-11 w-11 place-items-center rounded-full border border-white/25 text-white transition hover:border-gold hover:bg-white/10">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </button>
-          <button onClick={() => scroll(-1)} aria-label="التالي" className="grid h-11 w-11 place-items-center rounded-full border border-white/25 text-white transition hover:border-gold hover:bg-white/10">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m15 6-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </button>
+    <section id="services" className="full-bleed mb-14 scroll-mt-24 bg-brand py-16 text-white">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="mb-10 text-center">
+          <span className="mb-2 inline-block rounded-full border border-gold/40 px-4 py-1 text-xs font-semibold tracking-wide text-gold">
+            إدارة متكاملة
+          </span>
+          <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">كل حاجة في وحدتك — تحت سيطرتنا</h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-white/60">
+            من التسعير لتصاريح البوابة للكشف الشهري — بنغطّي كل تفصيلة.
+          </p>
         </div>
-        <Link href="/#estimator" className="btn-primary px-6 py-3">ابدأ مع وايلد ديكسي</Link>
+
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {SERVICES.map((s) => (
+            <article
+              key={s.t}
+              className="group rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition duration-200 hover:border-gold/50 hover:bg-white/[0.08]"
+            >
+              <span className="mb-4 grid h-11 w-11 place-items-center rounded-xl border border-gold/35 text-gold transition group-hover:border-gold group-hover:bg-gold/10">
+                <Icon name={s.icon} />
+              </span>
+              <h3 className="text-sm font-semibold leading-snug sm:text-base">{s.t}</h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-white/55 sm:text-sm">{s.d}</p>
+            </article>
+          ))}
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link href="/#estimator" className="btn-primary px-8 py-3">
+            احسب دخل وحدتك المتوقّع
+          </Link>
+        </div>
       </div>
     </section>
   );
 }
 
 function Icon({ name }: { name: IconName }) {
-  const common = { width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  const common = { width: 22, height: 22, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   switch (name) {
     case "pricing":
       return <svg {...common}><path d="M4 19V5M4 19h16M8 16V9M12 16V6M16 16v-4M8 6 5 9M12 4 9 7M16 9l-3-3" /></svg>;
