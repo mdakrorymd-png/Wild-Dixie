@@ -27,8 +27,9 @@ AdminUser = Annotated[User, Depends(require_role(UserRole.ADMIN))]
 # --------------------------------------------------------------------------- #
 @router.delete("/users/non-admin", summary="Delete all non-admin users (dev/reset)")
 async def delete_non_admin_users(_admin: AdminUser, db: DbSession) -> dict:
+    from sqlalchemy import text as sa_text
     result = await db.execute(
-        delete(User).where(~User.roles.contains([UserRole.ADMIN])).returning(User.id)
+        delete(User).where(sa_text("NOT 'admin' = ANY(roles)")).returning(User.id)
     )
     deleted = len(result.fetchall())
     await db.commit()
