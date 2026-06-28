@@ -55,9 +55,12 @@ class SmsMisrProvider:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.post(self._API_URL, data=payload)
             resp.raise_for_status()
-            # SMSMisr returns a numeric code; "4901" means sent successfully.
-            code = resp.text.strip()
-            if code != "4901":
+            # SMSMisr returns {"code": "1901"} on success
+            try:
+                code = resp.json().get("code", resp.text.strip())
+            except Exception:
+                code = resp.text.strip()
+            if code != "1901":
                 raise RuntimeError(f"SMSMisr error code {code!r} for {to!r}")
             logger.info("[SMS:smsmisr] sent to=%s code=%s", to, code)
 
