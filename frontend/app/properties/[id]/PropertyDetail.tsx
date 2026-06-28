@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import type { Property, Quote } from "@/lib/types";
+import type { Property, Quote, PriceQuote } from "@/lib/types";
 import { egp, propertyTypeAr } from "@/lib/format";
 import { galleryImages } from "@/lib/images";
 import { ShareProperty } from "@/components/ShareProperty";
@@ -21,6 +21,7 @@ export function PropertyDetail({ id }: { id: string }) {
   const [isDeposit, setIsDeposit] = useState(false);
   const [carPlate, setCarPlate] = useState("");
   const [quote, setQuote] = useState<Quote | null>(null);
+  const [priceQuote, setPriceQuote] = useState<PriceQuote | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -29,20 +30,19 @@ export function PropertyDetail({ id }: { id: string }) {
   }, [id]);
 
   useEffect(() => {
-    if (!checkIn || !checkOut || !user) {
+    if (!checkIn || !checkOut) {
       setQuote(null);
+      setPriceQuote(null);
       return;
     }
+    // Public price quote — shows per-night breakdown + discounts
+    api.getPriceQuote(id, checkIn, checkOut).then(setPriceQuote).catch(() => setPriceQuote(null));
+    // Booking quote — only needed when logged in (payment amounts, deposit)
+    if (!user) return;
     api
       .quote({ property_id: id, check_in: checkIn, check_out: checkOut, guests, is_deposit: isDeposit })
-      .then((q) => {
-        setQuote(q);
-        setError(null);
-      })
-      .catch((e) => {
-        setQuote(null);
-        setError(e.message);
-      });
+      .then((q) => { setQuote(q); setError(null); })
+      .catch((e) => { setQuote(null); setError(e.message); });
   }, [id, checkIn, checkOut, guests, isDeposit, user]);
 
   async function book() {
@@ -157,6 +157,16 @@ export function PropertyDetail({ id }: { id: string }) {
               <span className="text-2xl font-bold">{egp(prop.base_price_per_night)}</span>
               <span className="text-sm text-black/50">/ الليلة</span>
             </div>
+            {priceQuote?.instant_book ? (
+              <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4.5 13.5H11l-1 8.5 9-12h-6.5L13 2Z"/></svg>
+                حجز فوري
+              </span>
+            ) : (
+              <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                يحتاج موافقة المالك
+              </span>
+            )}
 
             <div className="mt-4 grid grid-cols-2 gap-2">
               <label className="text-xs font-medium text-black/50">
@@ -184,27 +194,53 @@ export function PropertyDetail({ id }: { id: string }) {
               </label>
             )}
 
-            {quote && (
+            {priceQuote && (
               <div className="mt-4 space-y-1.5 border-t border-black/[0.07] pt-4 text-sm fade-up">
-                <Row label={`${egp(quote.nightly_price)} × ${quote.nights} ليالٍ`} value={egp(quote.room_subtotal)} />
-                <Row label="رسوم نظافة" value={egp(quote.cleaning_fee)} muted />
-                <div className="rounded-lg bg-aqua/10 px-3 py-2">
-                  <div className="flex items-center justify-between font-medium text-aqua">
-                    <span>تأمين الأضرار</span>
-                    <span>{egp(quote.security_deposit)}</span>
+                {/* Per-night breakdown if mixed rates */}
+                {priceQuote.nights_breakdown.length > 0 && (() => {
+                  const prices = [...new Set(priceQuote.nights_breakdown.map((n) => n.price))];
+                  if (prices.length > 1) return (
+                    <div className="mb-2 rounded-lg bg-stone-50 px-3 py-2 text-xs text-black/60 space-y-0.5">
+                      {priceQuote.nights_breakdown.map((n) => (
+                        <div key={n.date} className="flex justify-between">
+                          <span>{new Date(n.date).toLocaleDateString("ar-EG", { weekday: "short", day: "numeric", month: "short" })}</span>
+                          <span className="font-medium">{egp(n.price)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                  return null;
+                })()}
+                <Row label={`${priceQuote.nights} ليالٍ`} value={egp(priceQuote.subtotal)} />
+                {priceQuote.discount_percent > 0 && (
+                  <div className="flex items-center justify-between text-green-700">
+                    <span className="flex items-center gap-1">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                      خصم {priceQuote.discount_percent}%
+                    </span>
+                    <span>-{egp(priceQuote.discount_amount)}</span>
                   </div>
-                  <p className="mt-0.5 text-[11px] text-aqua/80">يُرد بالكامل بعد المغادرة لو مفيش أضرار.</p>
-                </div>
+                )}
+                <Row label="رسوم نظافة" value={egp(priceQuote.cleaning_fee)} muted />
+                {quote && (
+                  <div className="rounded-lg bg-aqua/10 px-3 py-2">
+                    <div className="flex items-center justify-between font-medium text-aqua">
+                      <span>تأمين الأضرار</span>
+                      <span>{egp(quote.security_deposit)}</span>
+                    </div>
+                    <p className="mt-0.5 text-[11px] text-aqua/80">يُرد بالكامل بعد المغادرة لو مفيش أضرار.</p>
+                  </div>
+                )}
                 <div className="my-2 border-t border-black/[0.07]" />
-                <Row label="إجمالي قيمة الحجز" value={egp(quote.total_amount)} bold />
-                {quote.is_deposit && (
+                <Row label="إجمالي الحجز" value={egp(quote?.total_amount ?? priceQuote.total)} bold />
+                {quote?.is_deposit && (
                   <Row label={`العربون (${quote.down_payment_percentage}%)`} value={egp(quote.down_payment_amount)} muted />
                 )}
                 <div className="flex items-center justify-between rounded-lg bg-gold-light px-3 py-2 font-bold text-gold-dark">
                   <span>المطلوب الآن</span>
-                  <span>{egp(quote.amount_due_now)}</span>
+                  <span>{egp(quote?.amount_due_now ?? priceQuote.total)}</span>
                 </div>
-                {Number(quote.balance_due_later) > 0 && (
+                {quote && Number(quote.balance_due_later) > 0 && (
                   <p className="text-xs text-black/50">الباقي {egp(quote.balance_due_later)} عند الوصول.</p>
                 )}
               </div>
@@ -212,7 +248,7 @@ export function PropertyDetail({ id }: { id: string }) {
 
             {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
 
-            <button onClick={book} disabled={!quote || busy} className="btn-primary mt-4 w-full disabled:opacity-50">
+            <button onClick={book} disabled={!priceQuote || busy} className="btn-primary mt-4 w-full disabled:opacity-50">
               {busy ? "جارٍ الحجز…" : user ? "احجز الآن" : "سجّل دخول للحجز"}
             </button>
             <p className="mt-2.5 text-center text-xs text-black/40">🔒 مطلوب الرقم القومي للحجز</p>

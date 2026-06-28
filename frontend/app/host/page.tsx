@@ -120,14 +120,27 @@ export default function HostPage() {
         {listings.length === 0 ? (
           <p className="text-black/50">لا توجد قوائم بعد.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {listings.map((l) => (
-              <div key={l.id} className="card flex items-center justify-between p-4">
-                <div>
-                  <p className="font-medium">{l.title}</p>
-                  <p className="text-sm text-black/50">{l.area}</p>
+              <div key={l.id} className="card p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium">{l.title}</p>
+                    <p className="text-sm text-black/50">{l.area}</p>
+                    <p className="mt-0.5 text-sm font-bold text-brand">{egp(l.base_price_per_night)} / ليلة</p>
+                  </div>
+                  <span className="badge bg-black/5 text-black/60 shrink-0">{statusAr(l.status)}</span>
                 </div>
-                <span className="badge bg-black/5 text-black/60">{statusAr(l.status)}</span>
+                <div className="mt-3 flex flex-wrap gap-2 border-t border-black/[0.06] pt-3">
+                  <Link href={`/host/pricing?id=${l.id}`} className="flex items-center gap-1.5 rounded-lg border border-brand/20 bg-brand-light/50 px-3 py-1.5 text-xs font-medium text-brand hover:bg-brand-light">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    التسعير
+                  </Link>
+                  <Link href={`/properties/${l.id}`} className="flex items-center gap-1.5 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium text-black/60 hover:bg-black/5">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    معاينة
+                  </Link>
+                </div>
               </div>
             ))}
           </div>

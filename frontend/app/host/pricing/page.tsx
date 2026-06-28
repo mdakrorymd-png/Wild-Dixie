@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import type { PricingSettings, PriceRule, PriceRuleCreate, Property } from "@/lib/types";
 import Navbar from "@/components/Navbar";
@@ -47,6 +47,7 @@ function Field({ label, sub, value, onChange, type = "number", suffix, min, max 
 
 export default function HostPricingPage() {
   const router = useRouter();
+  const params = useSearchParams();
   const [properties, setProperties] = useState<Property[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
   const [settings, setSettings] = useState<PricingSettings | null>(null);
@@ -66,7 +67,9 @@ export default function HostPricingPage() {
   useEffect(() => {
     api.myProperties().then((p) => {
       setProperties(p.items);
-      if (p.items.length) setSelectedId(p.items[0].id);
+      const fromUrl = params.get("id");
+      const first = fromUrl && p.items.find((x) => x.id === fromUrl) ? fromUrl : p.items[0]?.id ?? "";
+      setSelectedId(first);
     }).catch(() => router.push("/login"));
   }, []);
 
