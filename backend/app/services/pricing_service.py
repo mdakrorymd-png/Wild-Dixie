@@ -25,7 +25,7 @@ _WEEKEND_DAYS = {3, 4, 5}
 
 def _nightly_price(prop: Property, night: date) -> Decimal:
     """Price for one specific night, respecting seasonal rules then weekend rate."""
-    for rule in prop.price_rules:  # already ordered by priority desc, start_date asc
+    for rule in sorted(prop.price_rules, key=lambda r: (-r.priority, r.start_date)):
         if rule.start_date <= night <= rule.end_date:
             return rule.price_per_night
     if prop.weekend_price_per_night and night.weekday() in _WEEKEND_DAYS:

@@ -123,7 +123,7 @@ async def delete_price_rule(
     rule_id: uuid.UUID,
     host: HostUser,
     db: DbSession,
-) -> None:
+):
     await property_service.get_owned_property(db, property_id, host)
     rule = await pricing_service.get_price_rule(db, rule_id, property_id)
     await pricing_service.delete_price_rule(db, rule)

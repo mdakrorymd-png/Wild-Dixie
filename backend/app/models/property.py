@@ -117,7 +117,7 @@ class Property(UUIDMixin, TimestampMixin, Base):
     price_rules: Mapped[list["PropertyPriceRule"]] = relationship(
         back_populates="property",
         cascade="all, delete-orphan",
-        order_by=(PropertyPriceRule.priority.desc(), PropertyPriceRule.start_date),
+        order_by="PropertyPriceRule.start_date",
         lazy="selectin",
     )
     images: Mapped[list["PropertyImage"]] = relationship(
