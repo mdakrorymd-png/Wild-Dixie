@@ -12,12 +12,27 @@ from app.models.user import User
 from app.schemas.common import Page
 from app.schemas.finance import DisputeRead, DisputeResolve, PayoutRead
 from app.schemas.payment import PaymentRead, RejectPaymentRequest
+from sqlalchemy import delete, not_
+
 from app.schemas.property import PropertyRead, RejectRequest
 from app.services import finance_service, payment_service, property_service
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 AdminUser = Annotated[User, Depends(require_role(UserRole.ADMIN))]
+
+
+# --------------------------------------------------------------------------- #
+# User management
+# --------------------------------------------------------------------------- #
+@router.delete("/users/non-admin", summary="Delete all non-admin users (dev/reset)")
+async def delete_non_admin_users(_admin: AdminUser, db: DbSession) -> dict:
+    result = await db.execute(
+        delete(User).where(not_(User.role == UserRole.ADMIN)).returning(User.id)
+    )
+    deleted = len(result.fetchall())
+    await db.commit()
+    return {"deleted": deleted}
 
 
 # --------------------------------------------------------------------------- #
