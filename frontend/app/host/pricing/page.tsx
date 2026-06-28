@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import type { PricingSettings, PriceRule, PriceRuleCreate, Property } from "@/lib/types";
-import Navbar from "@/components/Navbar";
+import { Navbar } from "@/components/Navbar";
 
 const EGP = (v: string | number | null | undefined) =>
   v != null ? `${Number(v).toLocaleString("ar-EG")} ج.م` : "—";
@@ -46,6 +46,10 @@ function Field({ label, sub, value, onChange, type = "number", suffix, min, max 
 }
 
 export default function HostPricingPage() {
+  return <Suspense><HostPricingInner /></Suspense>;
+}
+
+function HostPricingInner() {
   const router = useRouter();
   const params = useSearchParams();
   const [properties, setProperties] = useState<Property[]>([]);
