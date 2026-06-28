@@ -195,7 +195,12 @@ def parse_airbnb_html(html: str, source_url: str) -> ImportedListing:
     )
     description = _best_description(html)
 
-    images = [img for img in _all_meta_content(html, "og:image") if "/im/pictures/" in img]
+    _og_images = [
+        img.split("?", 1)[0]  # strip resize query params
+        for img in _all_meta_content(html, "og:image")
+        if "/im/pictures/" in img and not any(j in img.lower() for j in _IMG_JUNK)
+    ]
+    images: list[str] = list(dict.fromkeys(_og_images))  # dedupe, preserve order
     images.extend(img for img in _gallery_images(html) if img not in images)
 
     # Capacity: embedded JSON counts are most reliable, then visible text.
