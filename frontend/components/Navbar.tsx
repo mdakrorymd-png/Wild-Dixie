@@ -40,10 +40,10 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-1 text-base md:flex">
-          <NavLink href="/sokhna" label="احجز شاليه" active={pathname === "/sokhna"} light={overHero} />
-          <NavLink href="/#list" label="اعرض وحدتك" light={overHero} />
-          <NavLink href="/#manage" label="الإدارة الكاملة" light={overHero} />
+          <NavLink href="/#services" label="الإدارة الكاملة" light={overHero} />
+          <NavLink href="/#estimator" label="حاسبة الدخل" light={overHero} />
           <NavLink href="/#pricing" label="الأسعار" light={overHero} />
+          <NavLink href="/sokhna" label="احجز شاليه" active={pathname === "/sokhna"} light={overHero} />
           {isHost && <NavLink href="/owners/dashboard" label="لوحة المالك" light={overHero} />}
           {isHost && <NavLink href="/host" label="عقاراتي" light={overHero} />}
           {isAdmin && <NavLink href="/admin" label="الإدارة" light={overHero} />}
@@ -66,7 +66,7 @@ export function Navbar() {
           ) : (
             <NavLink href="/login" label="دخول" light={overHero} />
           )}
-          <Link href={listHref} className="btn-primary mr-1 text-base">اعرض وحدتك</Link>
+          <Link href="/#estimator" className="btn-primary mr-1 text-base">احسب دخلك مجانًا</Link>
         </nav>
 
         <button onClick={() => setOpen((v) => !v)} aria-label="القائمة" className={`rounded-lg p-2 md:hidden ${text}`}>
@@ -79,10 +79,10 @@ export function Navbar() {
       {open && (
         <nav className="border-t border-brand/10 bg-white px-4 py-3 text-sm md:hidden">
           <div className="flex flex-col gap-1">
-            <MobileLink href="/sokhna" label="احجز شاليه" onClick={() => setOpen(false)} />
-            <MobileLink href="/#list" label="اعرض وحدتك" onClick={() => setOpen(false)} />
-            <MobileLink href="/#manage" label="الإدارة الكاملة" onClick={() => setOpen(false)} />
+            <MobileLink href="/#services" label="الإدارة الكاملة" onClick={() => setOpen(false)} />
+            <MobileLink href="/#estimator" label="حاسبة الدخل" onClick={() => setOpen(false)} />
             <MobileLink href="/#pricing" label="الأسعار" onClick={() => setOpen(false)} />
+            <MobileLink href="/sokhna" label="احجز شاليه" onClick={() => setOpen(false)} />
             {user ? (
               <>
                 <MobileLink href="/bookings" label="حجوزاتي" onClick={() => setOpen(false)} />
@@ -100,7 +100,10 @@ export function Navbar() {
             ) : (
               <MobileLink href="/login" label="دخول" onClick={() => setOpen(false)} />
             )}
-            <Link href={listHref} onClick={() => setOpen(false)} className="btn-primary mt-2">اعرض وحدتك</Link>
+            <Link href="/#estimator" onClick={() => setOpen(false)} className="btn-primary mt-2">احسب دخلك مجانًا</Link>
+            <Link href={listHref} onClick={() => setOpen(false)} className="mt-1 text-center text-sm text-brand/60 underline-offset-2 hover:underline">
+              أو اعرض وحدتك مجانًا (بدون إدارة)
+            </Link>
           </div>
         </nav>
       )}

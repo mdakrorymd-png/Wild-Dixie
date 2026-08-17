@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { ListingType, PropertyListItem } from "@/lib/types";
 import { PropertyCard } from "@/components/PropertyCard";
+import { track } from "@/lib/track";
 
 const HERO = "https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1600&q=80";
 const SOON = ["الساحل الشمالي", "الجونة", "مرسى مطروح", "جنوب سيناء"];
@@ -45,6 +46,7 @@ export default function SokhnaPage() {
   async function joinWaitlist(e: React.FormEvent) {
     e.preventDefault();
     await api.createLead({ kind: "waitlist", area: wlArea, whatsapp: wlPhone });
+    track("waitlist_joined", { area: wlArea });
     setWlSent(true);
   }
 

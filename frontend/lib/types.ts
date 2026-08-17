@@ -80,6 +80,24 @@ export interface OwnerStatement {
   months: MonthStatement[];
 }
 
+export type LeadStatus = "new" | "contacted" | "qualified" | "won" | "lost";
+
+export interface Lead {
+  id: string;
+  kind: string;
+  status: LeadStatus;
+  full_name: string | null;
+  whatsapp: string | null;
+  area: string | null;
+  compound: string | null;
+  bedrooms: number | null;
+  season: string | null;
+  estimated_gross: string | null;
+  estimated_net: string | null;
+  note: string | null;
+  created_at: string;
+}
+
 export interface Payout {
   id: string;
   booking_id: string;

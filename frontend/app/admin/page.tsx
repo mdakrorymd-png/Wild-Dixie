@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import type { Property } from "@/lib/types";
+import type { Lead, LeadStatus, Property } from "@/lib/types";
 import { egp } from "@/lib/format";
 
 interface PendingPayment {
@@ -20,7 +20,22 @@ interface Dispute {
   status: string;
 }
 
-type Tab = "listings" | "payments" | "disputes";
+type Tab = "listings" | "payments" | "disputes" | "leads";
+
+const LEAD_STATUSES: { id: LeadStatus; label: string }[] = [
+  { id: "new", label: "جديد" },
+  { id: "contacted", label: "تم التواصل" },
+  { id: "qualified", label: "مؤهّل" },
+  { id: "won", label: "اتقفلت" },
+  { id: "lost", label: "خسرناها" },
+];
+const LEAD_STATUS_COLOR: Record<LeadStatus, string> = {
+  new: "bg-blue-50 text-blue-700",
+  contacted: "bg-amber-50 text-amber-800",
+  qualified: "bg-brand-light text-brand",
+  won: "bg-green-50 text-green-700",
+  lost: "bg-black/5 text-black/40",
+};
 
 export default function AdminPage() {
   const { user, loading } = useAuth();
@@ -28,12 +43,23 @@ export default function AdminPage() {
   const [props, setProps] = useState<Property[]>([]);
   const [payments, setPayments] = useState<PendingPayment[]>([]);
   const [disputes, setDisputes] = useState<Dispute[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
 
   const reload = useCallback(() => {
     api.adminPendingProperties().then((p) => setProps(p.items)).catch(() => undefined);
     api.adminPendingPayments().then((p) => setPayments(p.items)).catch(() => undefined);
     api.adminDisputes().then(setDisputes).catch(() => undefined);
+    api.adminListLeads().then(setLeads).catch(() => undefined);
   }, []);
+
+  async function setLeadStatus(id: string, status: LeadStatus) {
+    setLeads((ls) => ls.map((l) => (l.id === id ? { ...l, status } : l))); // optimistic
+    try {
+      await api.adminUpdateLeadStatus(id, status);
+    } catch {
+      reload(); // revert on failure
+    }
+  }
 
   useEffect(() => {
     if (user?.roles.includes("admin")) reload();
@@ -43,6 +69,7 @@ export default function AdminPage() {
   if (!user?.roles.includes("admin")) return <p className="text-black/50">صفحة الإدارة للمشرفين فقط.</p>;
 
   const tabs: { id: Tab; label: string; count: number }[] = [
+    { id: "leads", label: "الليدز", count: leads.filter((l) => l.status === "new").length },
     { id: "listings", label: "مراجعة القوائم", count: props.length },
     { id: "payments", label: "تأكيد المدفوعات", count: payments.length },
     { id: "disputes", label: "المنازعات", count: disputes.length },
@@ -71,6 +98,57 @@ export default function AdminPage() {
           </button>
         ))}
       </div>
+
+      {tab === "leads" && (
+        <Section empty={leads.length === 0} emptyText="لا يوجد ليدز بعد.">
+          {leads.map((l) => (
+            <div key={l.id} className="card p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="font-medium">
+                    {l.full_name || "بدون اسم"} · <span className="text-black/40">{l.kind === "waitlist" ? "قائمة انتظار" : "تقدير دخل"}</span>
+                  </p>
+                  <p className="mt-0.5 text-sm text-black/50">
+                    {[l.area, l.compound, l.bedrooms ? `${l.bedrooms} غرف` : null].filter(Boolean).join(" · ") || "—"}
+                  </p>
+                  {l.estimated_net && (
+                    <p className="mt-0.5 text-sm text-black/50">صافي متوقّع: {egp(l.estimated_net)}</p>
+                  )}
+                  <p className="mt-0.5 text-xs text-black/35">{new Date(l.created_at).toLocaleString("ar-EG")}</p>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span className={`badge ${LEAD_STATUS_COLOR[l.status]}`}>
+                    {LEAD_STATUSES.find((s) => s.id === l.status)?.label ?? l.status}
+                  </span>
+                  {l.whatsapp && (
+                    <a
+                      href={`https://wa.me/${l.whatsapp.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-medium text-aqua"
+                    >
+                      واتساب: {l.whatsapp} ↗
+                    </a>
+                  )}
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5 border-t border-black/[0.06] pt-3">
+                {LEAD_STATUSES.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setLeadStatus(l.id, s.id)}
+                    className={`rounded-full border px-3 py-1 text-xs transition ${
+                      l.status === s.id ? "border-brand bg-brand text-white" : "border-black/10 text-black/55 hover:bg-black/5"
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </Section>
+      )}
 
       {tab === "listings" && (
         <Section empty={props.length === 0} emptyText="لا قوائم بانتظار المراجعة.">

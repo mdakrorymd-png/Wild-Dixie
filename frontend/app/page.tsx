@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
 import type { PropertyListItem } from "@/lib/types";
 import { PropertyCard } from "@/components/PropertyCard";
 import { EarningsEstimator } from "@/components/EarningsEstimator";
@@ -15,14 +14,16 @@ import { WARM_HERO } from "@/lib/images";
 
 const HERO = WARM_HERO;
 
-// Guest booking flow (the homepage now speaks to the demand side first).
-const BOOK_STEPS = [
-  { n: "١", t: "اختار شاليهك", d: "اتفرّج على الشاليهات المتاحة في السخنة، وفلتر بالسعر والمنطقة والنوع." },
-  { n: "٢", t: "احجز وادفع عربون", d: "حدّد تواريخك وادفع العربون عبر إنستاباي أو المحفظة — بالجنيه وآمن." },
-  { n: "٣", t: "استمتع بإجازتك", d: "تواصل مباشر مع المضيف أو إدارة وايلد ديكسي، وتصريح البوابة جاهز قبل وصولك." },
+// Owner onboarding flow — this is the pre-inventory, pre-trust business Wild
+// Dixie actually is today, so the homepage leads with it, not with guest booking.
+const OWNER_STEPS = [
+  { n: "١", t: "استشارة مجانية", d: "بنتعرّف على وحدتك، أهدافك، وتوقّعاتك للدخل — من غير أي التزام." },
+  { n: "٢", t: "تجهيز وتسعير", d: "تصوير احترافي، قائمة محسّنة، وتسعير ديناميكي يلتقط فرق الويك-إند والمواسم." },
+  { n: "٣", t: "إدارة كاملة", d: "نتولّى الضيوف، النظافة، البوابة، الصيانة، والتحصيل — واستلم كشف وفلوس كل شهر." },
 ];
 
-// Why book direct vs. the global platforms.
+// Why book direct vs. the global platforms — kept as supporting content for the
+// guest sub-audience further down the page, not the homepage's opening pitch.
 const COMPARE: { label: string; us: string; them: string }[] = [
   { label: "رسوم خدمة إضافية على الضيف", us: "صفر — السعر واضح ومباشر", them: "١٥-٢٠٪ رسوم بتتضاف على السعر" },
   { label: "تواصل مع المضيف / الإدارة", us: "واتساب مباشر وفوري", them: "عبر المنصة فقط — ممنوع الاتصال" },
@@ -32,18 +33,14 @@ const COMPARE: { label: string; us: string; them: string }[] = [
 ];
 
 const FAQ: [string, string][] = [
-  ["إزاي أحجز شاليه؟", "اختار الشاليه من صفحة «احجز في السخنة»، حدّد تواريخك، وادفع العربون عبر إنستاباي أو المحفظة الإلكترونية — ويتأكد حجزك فورًا."],
-  ["ليه أحجز من وايلد ديكسي مش من Airbnb؟", "سعر مباشر من غير رسوم الخدمة الزيادة اللي المنصات العالمية بتضيفها، تواصل مباشر مع المضيف، ودفع محلي بالجنيه. كله أوفر وأوضح."],
-  ["الدفع بيتم إزاي؟", "العربون عبر إنستاباي / فودافون كاش / أورنج كاش — بالجنيه وآمن وموثّق. والباقي حسب الاتفاق مع المضيف أو الإدارة."],
-  ["سياسة الإلغاء إيه؟", "الإلغاء قبل ٧ أيام من الوصول بيرجّعلك المدفوع. الإلغاء خلال الـ٧ أيام بيخصم حسب سياسة الوحدة (موسم الصيف قصير)."],
-  ["عندي شاليه — أعرضه إزاي؟", "سجّل كمضيف، استورد وحدتك من Airbnb في ٢٠ ثانية أو ضيفها يدويًا، وعمولة ١٠٪ على الحجز بس. ولو عايز نشغّلها بالكامل بدالك، شوف باكدجات الإدارة الكاملة تحت."],
+  ["هفقد السيطرة على وحدتي؟", "لأ. الوحدة ملكك بالكامل، وانت اللي بتوافق على كل حجز في البداية. تقدر تستخدمها شخصيًا وتقدر تلغي الاتفاق معانا في أي وقت."],
+  ["فيه مقدّم أو التزام مدة معيّنة؟", "لأ — من غير مقدّم مبدئي، وتقدر تلغي الاتفاق في أي وقت. مفيش لوك-إن."],
+  ["هعرف دخلي إزاي بالظبط؟", "بتستلم كشف شهري شفّاف من لوحة المالك: إجمالي الإيجار، العمولة، وصافي دخلك جنب بعض — وتحويل عبر إنستاباي."],
+  ["فيه فرق بين الباكدجات التلاتة إيه؟", "«لايت» (١٥٪) لو هتدير النظافة والمفاتيح بنفسك واحنا بنجيب الحجوزات بس. «الإدارة الكاملة» (٢٠٪) نتولى كل حاجة. «بريميوم» (٢٨٪) زي الكاملة + تجهيز وديكور وتصوير سينمائي واستقبال VIP."],
+  ["عندي شاليه بس مش عايز إدارة كاملة؟", "تقدر تعرض وحدتك بنفسك مجانًا (استيراد من Airbnb في ٢٠ ثانية أو إضافة يدوية) وتدفع عمولة ١٠٪ على الحجز بس — من غير أي إدارة منّا."],
 ];
 
 export default function Home() {
-  const { user } = useAuth();
-  const isHost = user?.roles.includes("host");
-  const listHref = !user ? "/register" : isHost ? "/host" : "/profile";
-
   const [featured, setFeatured] = useState<PropertyListItem[]>([]);
   const [openFaq, setOpenFaq] = useState(-1);
 
@@ -53,97 +50,44 @@ export default function Home() {
 
   return (
     <div>
-      {/* 1. Hero — guest-first: book a chalet directly */}
+      {/* 1. Hero — owner-first: Wild Dixie is pre-inventory, pre-trust; the homepage's
+          job is convincing an owner to hand over a property, not selling a booking. */}
       <section className="full-bleed relative mb-12 h-[600px] overflow-hidden sm:h-[670px]">
         <Image src={HERO} alt="شاليه على بحر العين السخنة وقت الغروب" fill priority className="object-cover" />
         <div className="hero-overlay absolute inset-0" />
         <div className="absolute inset-0 mx-auto flex max-w-4xl flex-col items-center justify-center px-5 pt-16 text-center text-white">
           <span className="mb-4 rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-xs font-medium backdrop-blur fade-up">
-            حجز شاليهات العين السخنة — مباشر وبالجنيه
+            إدارة متكاملة لوحدتك الساحلية — العين السخنة
           </span>
           <h1 className="max-w-3xl text-4xl font-bold leading-tight drop-shadow sm:text-5xl fade-up">
-            احجز شاليهك في السخنة مباشرة — بأوفر سعر وبدون رسوم زيادة.
+            شاليهك في السخنة قاعد فاضي؟ حوّله لدخل شهري ثابت.
           </h1>
           <p className="mt-4 max-w-2xl text-base text-white/85 fade-up">
-            شاليهات وفيلات مختارة في العين السخنة. احجز مباشرة من المالك أو من إدارة وايلد ديكسي — من غير رسوم الحجز الزيادة بتاعة Airbnb و Booking، وتواصل مباشر، ودفع بالجنيه عبر إنستاباي.
+            وايلد ديكسي إسكيبس بتدير وحدتك من الألف للياء — تسعير، ضيوف، نظافة، تصاريح البوابة، وتحصيل عبر إنستاباي — وانت بتستلم كشف شهري واضح. الوحدة تفضل ملكك بالكامل، وموافقتك على كل حجز.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3 fade-up">
-            <Link href="/sokhna" className="btn-primary px-7 py-3 text-base">شوف الشاليهات المتاحة</Link>
-            <a href="https://wa.me/201033388003" target="_blank" rel="noopener noreferrer" className="btn-outline border-white/40 bg-white/10 px-6 py-3 text-base text-white hover:bg-white/20">احجز عبر واتساب</a>
+            <Link href="#estimator" className="btn-primary px-7 py-3 text-base">احسب دخلك مجانًا</Link>
+            <a href="https://wa.me/201033388003" target="_blank" rel="noopener noreferrer" className="btn-outline border-white/40 bg-white/10 px-6 py-3 text-base text-white hover:bg-white/20">كلّمنا واتساب</a>
           </div>
-          <Link href="#host" className="mt-4 text-sm text-white/80 underline-offset-4 hover:text-white hover:underline fade-up">
-            عندك شاليه وعايز تأجّره؟ اعرضه معانا ←
+          <p className="mt-3 text-xs text-white/60 fade-up">من غير مقدّم · تقدر تلغي في أي وقت</p>
+          <Link href="/sokhna" className="mt-4 text-sm text-white/80 underline-offset-4 hover:text-white hover:underline fade-up">
+            عايز تحجز شاليه بدل ما تعرض وحدتك؟ شوف الشاليهات المتاحة ←
           </Link>
         </div>
       </section>
 
       <div className="mx-auto max-w-6xl px-1">
-        {/* 2. Featured chalets — the actual inventory, guest-facing */}
-        <section className="mb-16">
-          <div className="mb-4 flex items-baseline justify-between">
-            <div>
-              <h2 className="text-2xl font-bold sm:text-3xl">شاليهات متاحة للحجز في السخنة</h2>
-              <p className="mt-1 text-sm text-black/55">حجز مباشر — اختار، احجز، واستمتع.</p>
-            </div>
-            <Link href="/sokhna" className="shrink-0 text-sm font-medium text-aqua">شوف الكل ←</Link>
-          </div>
-          {featured.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {featured.slice(0, 6).map((p) => <PropertyCard key={p.id} p={p} />)}
-            </div>
-          ) : (
-            <div className="card grid place-items-center py-14 text-center text-sm text-black/45">
-              بنجهّز أحدث الشاليهات — تقدر تشوف المتاح دلوقتي من{" "}
-              <Link href="/sokhna" className="font-medium text-brand underline">صفحة السخنة</Link>.
-            </div>
-          )}
-        </section>
-
-        {/* 3. Why book with Wild Dixie — direct comparison */}
-        <section className="mb-16">
-          <div className="mb-6 text-center">
-            <span className="mb-2 inline-block text-sm font-semibold tracking-wide text-gold-dark">مقارنة مباشرة</span>
-            <h2 className="text-3xl font-bold sm:text-4xl">ليه تحجز من وايلد ديكسي؟</h2>
-            <p className="mt-2 text-sm text-black/55">نفس الشاليه — بأوفر وأوضح وأسرع من المنصات العالمية.</p>
-          </div>
-          <div className="overflow-hidden rounded-3xl border border-brand/10 bg-white shadow-[var(--shadow-soft)]">
-            <div className="grid grid-cols-[1.6fr_1fr_1fr] gap-px bg-brand/[0.06] text-sm">
-              <div className="bg-white px-5 py-4 text-xs font-medium text-black/35">المعيار</div>
-              <div className="bg-brand px-4 py-4 text-center font-bold text-gold">وايلد ديكسي ✓</div>
-              <div dir="ltr" className="bg-white px-4 py-4 text-center text-xs font-semibold text-black/40">Airbnb / Booking</div>
-              {COMPARE.map((row) => (
-                <Row key={row.label} {...row} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 4. How booking works (guest) */}
-        <section className="mb-16">
-          <h2 className="mb-2 text-center text-3xl font-bold sm:text-4xl">احجز في ٣ خطوات</h2>
-          <p className="mb-6 text-center text-sm text-black/55">من الاختيار للوصول — بسيطة وسريعة.</p>
-          <div className="grid gap-5 sm:grid-cols-3">
-            {BOOK_STEPS.map((s) => (
-              <div key={s.n} className="card p-6 text-center">
-                <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-gold text-xl font-bold text-brand-dark">{s.n}</div>
-                <h3 className="font-bold">{s.t}</h3>
-                <p className="mt-1.5 text-sm text-black/60">{s.d}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 5. Big-number trust stats */}
+        {/* 2. Trust band — honest, defensible owner claims (no fabricated %). */}
         <section className="full-bleed mb-16 bg-brand py-16 text-white">
           <div className="mx-auto max-w-6xl px-4">
             <p className="mb-10 text-center text-sm font-semibold tracking-widest text-gold/80 uppercase">ليه وايلد ديكسي؟</p>
             <div className="grid gap-8 text-center sm:grid-cols-3">
               {[
-                { n: "٠٪", label: "رسوم زيادة على الضيف", sub: "السعر اللي شايفه هو اللي بتدفعه — بدون مفاجآت." },
-                { n: "١٠٪", label: "عمولة الحجز فقط", sub: "للمضيف اللي بيدير وحدته — أقل من أي منصة عالمية." },
-                { n: "٢٤/٧", label: "دعم واتساب بالعربي", sub: "فريق محلي يعرف كل كمبوند وكل بوابة في السخنة." },
+                { n: "٩-١٠", label: "شهور تأجير في السنة", sub: "السخنة قريبة من القاهرة وطلبها قوي طول السنة، مش موسم صيفي بس." },
+                { n: "١٠٠٪", label: "شفافية في الكشف الشهري", sub: "إجمالي، عمولة، وصافي جنب بعض — تشوف كل جنيه لحظة بلحظة." },
+                { n: "٠", label: "مقدّم أو التزام مدة", sub: "تقدر تبدأ وتلغي في أي وقت — القرار في إيدك طول الوقت." },
               ].map(({ n, label, sub }) => (
-                <div key={n} className="group">
+                <div key={label} className="group">
                   <p className="text-6xl font-bold text-gold sm:text-7xl">{n}</p>
                   <p className="mt-2 text-base font-semibold">{label}</p>
                   <p className="mt-1 text-sm text-white/55">{sub}</p>
@@ -153,28 +97,37 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 6. Got a chalet? Become a host (short) */}
-        <section id="host" className="mb-16 scroll-mt-24">
-          <div className="flex flex-col items-center gap-4 rounded-3xl border border-gold/30 bg-gradient-to-br from-gold-light/50 to-white p-7 text-center sm:p-9">
-            <h2 className="text-2xl font-bold sm:text-3xl">عندك شاليه؟ خلّيه يكسب.</h2>
-            <p className="max-w-xl text-sm text-black/60">
-              اعرض وحدتك في دقايق (استورد من Airbnb أو ضيفها يدويًا)، والمستأجر يحجز ويدفع عندك — وعمولة ١٠٪ على الحجز بس.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Link href={listHref} className="btn-primary px-6 py-3">ابدأ كمضيف مجانًا</Link>
-              <Link href="#management" className="btn-outline px-6 py-3">عايز نشغّلها بدالك؟</Link>
-            </div>
+        {/* 3. Problem → promise */}
+        <section className="mb-16 text-center">
+          <h2 className="mx-auto max-w-2xl text-2xl font-bold sm:text-3xl">
+            وحدتك أصل بيتآكل بالتضخم وهو فاضي — إحنا بنحوّله لدخل.
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-black/55">
+            وانت محتفظ بالملكية الكاملة وموافقتك على كل حجز — إحنا بس بنتولى التشغيل.
+          </p>
+        </section>
+
+        {/* 4. How it works (owner onboarding) */}
+        <section className="mb-16">
+          <h2 className="mb-2 text-center text-3xl font-bold sm:text-4xl">إزاي بنشتغل</h2>
+          <p className="mb-6 text-center text-sm text-black/55">من الاستشارة الأولى لأول كشف دخل — ٣ خطوات بسيطة.</p>
+          <div className="grid gap-5 sm:grid-cols-3">
+            {OWNER_STEPS.map((s) => (
+              <div key={s.n} className="card p-6 text-center">
+                <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-gold text-xl font-bold text-brand-dark">{s.n}</div>
+                <h3 className="font-bold">{s.t}</h3>
+                <p className="mt-1.5 text-sm text-black/60">{s.d}</p>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* 7. Full property management (for hands-off owners) */}
-        <section id="management" className="scroll-mt-24">
-          <div className="mb-1 text-center">
-            <span className="text-sm font-semibold tracking-wide text-gold-dark">للمالك اللي عايز يريّح باله تمامًا</span>
-            <h2 className="mt-1 text-3xl font-bold sm:text-4xl">إدارة العقارات الكاملة</h2>
-            <p className="mx-auto mt-2 max-w-xl text-sm text-black/55">سيبلنا التشغيل كله — تسعير، ضيوف، نظافة، بوابة، وتحصيل — واستلم دخلك بكشف شهري واضح.</p>
-          </div>
-        </section>
+        {/* 5. Services + feature blocks */}
+        <div className="mb-1 text-center">
+          <span className="text-sm font-semibold tracking-wide text-gold-dark">للمالك اللي عايز يريّح باله تمامًا</span>
+          <h2 className="mt-1 text-3xl font-bold sm:text-4xl">إدارة العقارات الكاملة</h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-black/55">سيبلنا التشغيل كله — تسعير، ضيوف، نظافة، بوابة، وتحصيل — واستلم دخلك بكشف شهري واضح.</p>
+        </div>
         <ServicesCarousel />
 
         <section className="mb-16 space-y-16">
@@ -202,54 +155,82 @@ export default function Home() {
           />
         </section>
 
-        {/* Management packages */}
+        {/* 6. Management packages */}
         <Pricing />
 
-        {/* Owner earnings estimator (part of the management pitch) */}
+        {/* 7. Owner earnings estimator */}
         <section id="estimator" className="mb-16 scroll-mt-24">
           <h2 className="mb-2 text-center text-3xl font-bold sm:text-4xl">اعرف دخل وحدتك المتوقّع</h2>
-          <p className="mb-6 text-center text-sm text-black/55">املا البيانات وفريقنا هيتواصل معاك على واتساب — من غير أي التزام.</p>
+          <p className="mb-6 text-center text-sm text-black/55">اختار الباكدج اللي يناسبك، واملا البيانات — وفريقنا هيتواصل معاك على واتساب من غير أي التزام.</p>
           <EarningsEstimator />
         </section>
 
-        {/* Testimonials */}
+        {/* 8. Founder trust — real claim about the founder, not invented guest/owner
+            quotes. We don't have real reviews yet; showing fabricated ones would be
+            worse than showing none. This comes down the day real reviews exist. */}
         <section className="mb-16">
-          <h2 className="mb-6 text-center text-3xl font-bold sm:text-4xl">رأي عملائنا</h2>
-          <div className="grid gap-5 sm:grid-cols-3">
-            {[
-              ["م", "منى — القاهرة", "حجزت شاليه في أزها مباشرة عبر وايلد ديكسي — أوفر من Airbnb بفرق واضح، وكلّمت المضيف على طول."],
-              ["أ", "م. أحمد — مالك", "عرضت وحدتي في دقايق باللينك بتاع Airbnb، وأول حجز جه نفس الأسبوع والفلوس وصلت إنستاباي."],
-              ["س", "سارة — مقيمة بالخارج", "اخترت الإدارة الكاملة. التوثيق بالصور والكشف الشهري طمّنوني تمامًا وأنا بعيدة."],
-            ].map(([initial, who, quote]) => (
-              <div key={who} className="card p-6">
-                <div className="mb-3 flex gap-0.5 text-gold">
-                  {[0, 1, 2, 3, 4].map((s) => (
-                    <svg key={s} width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="m12 2 3 6.5 7 .6-5.3 4.6 1.6 6.8L12 17.3 5.7 20.5l1.6-6.8L2 9.1l7-.6L12 2Z" /></svg>
-                  ))}
-                </div>
-                <p className="text-sm leading-7 text-black/75">«{quote}»</p>
-                <div className="mt-4 flex items-center gap-2.5">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-light font-bold text-brand">{initial}</span>
-                  <p className="text-sm font-bold text-brand">{who}</p>
-                </div>
-              </div>
-            ))}
+          <div className="mx-auto max-w-2xl rounded-3xl border border-brand/10 bg-white p-7 text-center shadow-[var(--shadow-soft)] sm:p-9">
+            <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-brand-light text-xl font-bold text-brand">م</div>
+            <p className="text-lg leading-8 text-black/80">
+              «أنا نفسي مالك وحدة في الزعفرانة، وبدير وحدتي بنفس النظام قبل ما أدير وحدتك — نفس التوثيق بالصور، نفس الكشف الشهري.»
+            </p>
+            <p className="mt-3 text-sm font-bold text-brand">محمد — مؤسس وايلد ديكسي إسكيبس</p>
+            <p className="mt-4 text-xs text-black/40">لسه في بداية رحلتنا — أول ما يكون عندنا حجوزات وتقييمات حقيقية من عملاء، هتلاقيها هنا بدل الكلام ده.</p>
           </div>
         </section>
 
-        {/* Guest CTA band */}
+        {/* 9. Guest door — secondary, real inventory, not the homepage's main pitch */}
+        <section className="mb-16">
+          <div className="mb-4 flex items-baseline justify-between">
+            <div>
+              <h2 className="text-2xl font-bold sm:text-3xl">مش مالك؟ شاليهات متاحة للحجز في السخنة</h2>
+              <p className="mt-1 text-sm text-black/55">حجز مباشر — من غير رسوم الحجز الزيادة بتاعة المنصات العالمية.</p>
+            </div>
+            <Link href="/sokhna" className="shrink-0 text-sm font-medium text-aqua">شوف الكل ←</Link>
+          </div>
+          {featured.length > 0 ? (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {featured.slice(0, 6).map((p) => <PropertyCard key={p.id} p={p} />)}
+            </div>
+          ) : (
+            <div className="card grid place-items-center py-14 text-center text-sm text-black/45">
+              بنجهّز أحدث الشاليهات — تقدر تشوف المتاح دلوقتي من{" "}
+              <Link href="/sokhna" className="font-medium text-brand underline">صفحة السخنة</Link>.
+            </div>
+          )}
+        </section>
+
+        <section className="mb-16">
+          <div className="mb-6 text-center">
+            <span className="mb-2 inline-block text-sm font-semibold tracking-wide text-gold-dark">مقارنة مباشرة</span>
+            <h2 className="text-3xl font-bold sm:text-4xl">ليه تحجز من وايلد ديكسي؟</h2>
+            <p className="mt-2 text-sm text-black/55">نفس الشاليه — بأوفر وأوضح وأسرع من المنصات العالمية.</p>
+          </div>
+          <div className="overflow-hidden rounded-3xl border border-brand/10 bg-white shadow-[var(--shadow-soft)]">
+            <div className="grid grid-cols-[1.6fr_1fr_1fr] gap-px bg-brand/[0.06] text-sm">
+              <div className="bg-white px-5 py-4 text-xs font-medium text-black/35">المعيار</div>
+              <div className="bg-brand px-4 py-4 text-center font-bold text-gold">وايلد ديكسي ✓</div>
+              <div dir="ltr" className="bg-white px-4 py-4 text-center text-xs font-semibold text-black/40">Airbnb / Booking</div>
+              {COMPARE.map((row) => (
+                <Row key={row.label} {...row} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 10. Final CTA — owner primary, guest secondary */}
         <section className="full-bleed mb-16 bg-gold py-12 text-center text-brand-dark">
           <div className="mx-auto max-w-4xl px-4">
-            <h2 className="text-2xl font-bold sm:text-3xl">إجازتك في السخنة على بُعد حجز.</h2>
-            <p className="mt-1 text-sm text-brand-dark/75">اختار شاليهك، احجز بالجنيه، واستمتع — من غير رسوم زيادة.</p>
+            <h2 className="text-2xl font-bold sm:text-3xl">وحدتك قاعدة فاضية؟ خلّيها تكسب.</h2>
+            <p className="mt-1 text-sm text-brand-dark/75">احسب دخلك المتوقّع مجانًا، أو كلّمنا على واتساب مباشرة.</p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
-              <Link href="/sokhna" className="btn-navy px-6 py-3">شوف الشاليهات</Link>
+              <Link href="#estimator" className="btn-navy px-6 py-3">احسب دخلك مجانًا</Link>
               <a href="https://wa.me/201033388003" target="_blank" rel="noopener noreferrer" className="btn bg-white px-6 py-3 text-brand hover:bg-white/90">كلّمنا واتساب</a>
             </div>
           </div>
         </section>
 
-        {/* FAQ */}
+        {/* FAQ — owner questions first, guest questions after */}
         <section className="mb-12">
           <h2 className="mb-6 text-center text-3xl font-bold sm:text-4xl">أسئلة شائعة</h2>
           <div className="mx-auto max-w-2xl space-y-2">

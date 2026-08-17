@@ -28,6 +28,7 @@ class LeadRead(BaseModel):
 
     id: uuid.UUID
     kind: str
+    status: str
     full_name: str | None
     whatsapp: str | None
     area: str | None
@@ -36,4 +37,14 @@ class LeadRead(BaseModel):
     season: str | None
     estimated_gross: Decimal | None
     estimated_net: Decimal | None
+    note: str | None
     created_at: datetime
+
+
+# Kept as a plain string on the model (see Lead.status), but writes are
+# restricted to this fixed set so the admin pipeline can't drift into typos.
+LEAD_STATUSES = ("new", "contacted", "qualified", "won", "lost")
+
+
+class LeadStatusUpdate(BaseModel):
+    status: str = Field(..., pattern="^(" + "|".join(LEAD_STATUSES) + ")$")

@@ -72,6 +72,26 @@ END $$;
 """
 
 
+_MIGRATION_0012 = """
+DO $$
+BEGIN
+    -- Lead pipeline stage (new -> contacted -> qualified -> won/lost), so
+    -- ad-generated leads can be tracked instead of just captured.
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'leads' AND column_name = 'status'
+    ) THEN
+        ALTER TABLE leads
+            ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'new';
+        CREATE INDEX ix_leads_status ON leads (status);
+        -- Mark in alembic_version so the file-based migration is skipped later.
+        UPDATE alembic_version SET version_num = '0011_lead_status'
+        WHERE version_num = '0010_listing_type';
+    END IF;
+END $$;
+"""
+
+
 async def _apply_pending_migrations() -> None:
     """Idempotent startup migrations — safe to run on every cold start."""
     try:
@@ -79,6 +99,7 @@ async def _apply_pending_migrations() -> None:
         async with engine.begin() as conn:
             await conn.execute(_sa.text(_MIGRATION_0010))
             await conn.execute(_sa.text(_MIGRATION_0011))
+            await conn.execute(_sa.text(_MIGRATION_0012))
         log.info("Startup migrations applied (or already up to date).")
     except Exception as exc:
         log.warning("Startup migration error (continuing): %s", exc)
