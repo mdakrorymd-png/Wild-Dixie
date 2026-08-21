@@ -108,7 +108,7 @@ export default function Home() {
         </section>
 
         {/* 4. How it works (owner onboarding) */}
-        <section className="mb-16">
+        <section id="how" className="mb-16 scroll-mt-24">
           <h2 className="mb-2 text-center text-3xl font-bold sm:text-4xl">إزاي بنشتغل</h2>
           <p className="mb-6 text-center text-sm text-black/55">من الاستشارة الأولى لأول كشف دخل — ٣ خطوات بسيطة.</p>
           <div className="grid gap-5 sm:grid-cols-3">

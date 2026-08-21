@@ -252,7 +252,15 @@ Ranking the trust stack the master prompt asks for, by what is actually true tod
 
 ## 20. Scalability
 
-**VERIFIED risk, self-documented by the repo:** `DEPLOY.md` states the free-tier Render deployment sleeps after 15 minutes of inactivity (30–50s cold start), the free Postgres database **is wiped after 30 days**, and the Airbnb-listing-importer (Playwright/Chromium) does not run at all on the free tier. The document itself correctly labels this "كفاية للتجربة؛ للإطلاق الجدّي رقّيها لخطة مدفوعة" (fine for testing; upgrade to a paid plan for a real launch). **If ads are about to run, this infrastructure must not be what they point to.** This is a concrete, dated, self-acknowledged P0.
+**Updated finding.** The original version of this audit treated the free-tier Render path in `DEPLOY.md`/`render.yaml` (sleeps after 15 min, DB wiped after 30 days) as the live infrastructure risk. A DNS check plus a second pass through the repo found this was incomplete: **`wilddixie.com` actually resolves to Vercel**, and the repo already contains a working Vercel deployment path for the backend (`backend/vercel.json` + `backend/api/index.py`, serving the FastAPI app as a serverless function) that `DEPLOY.md` never documented — a real gap, now closed with a new `DEPLOY_VERCEL.md`.
+
+This is better news than the original finding: Vercel is a legitimate production host, not a free-tier toy. But it swaps one set of risks for another, still **UNVERIFIED and worth confirming before ad spend**:
+- Serverless functions are stateless per-invocation — `ENABLE_ICAL_SCHEDULER` must stay `false` there (same constraint as Render), and any recurring job needs Vercel Cron, not the in-process scheduler `app/main.py` starts on lifespan.
+- Vercel does not bundle Postgres — `app/core/config.py`'s own docstring anticipates Neon/Render/Railway, so **DATA REQUIRED: confirm a real `DATABASE_URL` (Neon or otherwise) is actually set on the Vercel backend project**, not left pointing at a dev database.
+- **DATA REQUIRED: confirm `SMS_PROVIDER` is `smsmisr` (not the default `console`) and `EXPOSE_DEBUG_OTP` is `false`** on that deployment — the defaults are safe for local dev but would silently break real OTP delivery, or worse, leak OTP codes, if carried into production unnoticed.
+- **DATA REQUIRED: confirm the frontend Vercel project's `BACKEND_ORIGIN`/`API_INTERNAL_URL` actually point at the backend Vercel project's URL** — these are two separate Vercel projects from the same repo, and nothing wires them together automatically.
+
+None of this is a P0 rebuild — it's a five-minute checklist against the Vercel dashboard, laid out in full in `DEPLOY_VERCEL.md`.
 
 ---
 
