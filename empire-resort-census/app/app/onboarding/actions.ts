@@ -10,7 +10,9 @@ export interface RegisterResult {
 // Runs as the authenticated caller (not service-role), so every insert
 // here is still subject to the RLS policies in 0004_rls.sql — the unit
 // UNIQUE constraint and the phone UNIQUE constraint are what actually
-// stop double-registration, not this function's logic.
+// stop double-registration, not this function's logic. Login is by email
+// OTP (see app/login), so the phone entered here is self-reported, same
+// as the name — its only enforcement is the DB uniqueness constraint.
 export async function registerOwner(formData: FormData): Promise<RegisterResult> {
   const supabase = await createClient();
   const {
@@ -20,8 +22,10 @@ export async function registerOwner(formData: FormData): Promise<RegisterResult>
 
   const unitId = formData.get("unit_id") as string;
   const fullName = (formData.get("full_name") as string)?.trim();
-  if (!unitId || !fullName) return { error: "برجاء اختيار الوحدة وإدخال الاسم." };
-  if (!user.phone) return { error: "لا يوجد رقم تليفون موثّق على هذا الحساب." };
+  const phone = (formData.get("phone") as string)?.trim();
+  if (!unitId || !fullName || !phone) {
+    return { error: "برجاء اختيار الوحدة وإدخال الاسم ورقم التليفون." };
+  }
 
   const { data: owner, error: ownerError } = await supabase
     .from("owners")
@@ -43,7 +47,7 @@ export async function registerOwner(formData: FormData): Promise<RegisterResult>
 
   const { error: phoneError } = await supabase
     .from("owner_phones")
-    .insert({ owner_id: owner.id, phone: user.phone });
+    .insert({ owner_id: owner.id, phone });
   if (phoneError) {
     if (phoneError.code === "23505") {
       return { error: "رقم التليفون ده مسجّل بالفعل على وحدة تانية." };

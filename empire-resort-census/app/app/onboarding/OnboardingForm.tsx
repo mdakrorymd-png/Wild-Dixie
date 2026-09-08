@@ -14,6 +14,7 @@ export default function OnboardingForm({
   const [stageId, setStageId] = useState("");
   const [unitId, setUnitId] = useState("");
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -82,6 +83,19 @@ export default function OnboardingForm({
           className="input"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <label className="mb-1 block text-sm text-gray-700">رقم التليفون</label>
+        <input
+          name="phone"
+          type="tel"
+          className="input"
+          placeholder="+201xxxxxxxxx"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
           required
         />
       </div>

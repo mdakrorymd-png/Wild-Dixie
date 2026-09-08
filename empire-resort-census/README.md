@@ -27,8 +27,18 @@ empire-resort-census/
 2. In the Supabase SQL editor, run `supabase/migrations/*.sql` **in
    numeric order** (0001 → 0005). They are plain SQL, no Supabase CLI
    required, though `supabase db push` works too if you prefer the CLI.
-3. Enable **Phone** auth in Supabase Auth settings and configure a real
-   SMS provider (Twilio, etc.) — OTP login does not work without one.
+3. **Email OTP is already enabled by default** in every Supabase project
+   (it's the "Email" provider under Authentication → Providers) — no
+   third-party gateway needed, and it's free. Login is email + one-time
+   code (see `app/app/login/page.tsx`), not phone OTP: phone-based OTP
+   would need a paid SMS gateway (Twilio et al.) with no viable free tier
+   at 650-owner scale, so login went through email instead. The phone
+   number is still collected and still DB-unique-enforced (see
+   `owner_phones`) — it's just no longer the login channel. Supabase's
+   built-in email sending is rate-limited (a handful of emails/hour),
+   which is fine for testing; before onboarding real owners, switch to
+   custom SMTP under Authentication → Settings → SMTP (Resend, SendGrid,
+   etc. all have free tiers big enough for a one-time rollout).
 4. `cd app && cp .env.local.example .env.local` and fill in your project's
    URL + anon key.
 5. `npm install && npm run dev` → http://localhost:3000.
@@ -92,7 +102,7 @@ survey copy (§6/§8) — is unchanged from spec.
 
 | Constraint | Implementation |
 |---|---|
-| No fake auth | `app/login` uses only `supabase.auth.signInWithOtp` / `verifyOtp` (real phone OTP). No role picker anywhere touches authorization. |
+| No fake auth | `app/login` uses only `supabase.auth.signInWithOtp` / `verifyOtp` (real email OTP — see the login-channel note above). No role picker anywhere touches authorization. |
 | Real DB-level RLS | `supabase/migrations/0004_rls.sql` — every table, policies keyed off `auth.uid()` and `user_roles`, verified independent of the frontend. |
 | Personal vs. statistical separation | `owner_names` / `owner_phones` (personal) vs. `owners` + `*_public_stats` views (statistical); see deviation #1 above. |
 | No leading questions / no score | `app/lib/constants.ts` is the single source of survey copy, copied verbatim from spec §6/§8; nothing computes a stance/loyalty score anywhere. |
@@ -103,7 +113,7 @@ survey copy (§6/§8) — is unchanged from spec.
 
 ## What's built vs. what's left
 
-Built: schema + RLS + audit + aggregate views; phone-OTP login; unit
+Built: schema + RLS + audit + aggregate views; email-OTP login; unit
 self-registration (self-reported, immediate); the full 8-section + main
 position + participation + payment survey; dashboard; stage comparison;
 owners list (server-paginated, census_manager+); owner profile with

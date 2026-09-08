@@ -4,14 +4,24 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-// Real Supabase Auth phone-OTP flow. There is no "pick a role" shortcut —
+// Real Supabase Auth email-OTP flow. There is no "pick a role" shortcut —
 // signInWithOtp/verifyOtp are the only doors in, per spec §2 constraint 1.
+//
+// Originally phone-OTP per the spec's literal text; switched to email-OTP
+// because phone OTP requires a paid SMS gateway (Twilio et al.) with no
+// free tier that works past a handful of manually-verified numbers, and
+// this project needs a genuinely free option to test with. Supabase's
+// built-in email sending is free (rate-limited — fine for testing, but
+// plug in real SMTP, e.g. Resend/SendGrid, before onboarding 650 owners
+// for real). The phone number is NOT gone from the system — it's still
+// collected and still unique-enforced in owner_phones (see onboarding) —
+// it's just no longer the login channel.
 export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [step, setStep] = useState<"phone" | "code">("phone");
+  const [step, setStep] = useState<"email" | "code">("email");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +29,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithOtp({ phone });
+    const { error } = await supabase.auth.signInWithOtp({ email });
     setLoading(false);
     if (error) {
       setError(error.message);
@@ -32,7 +42,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.verifyOtp({ phone, token: code, type: "sms" });
+    const { error } = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
     setLoading(false);
     if (error) {
       setError(error.message);
@@ -50,15 +60,15 @@ export default function LoginPage() {
         معين.
       </p>
 
-      {step === "phone" && (
+      {step === "email" && (
         <form onSubmit={sendCode} className="space-y-3">
-          <label className="block text-sm text-gray-700">رقم التليفون</label>
+          <label className="block text-sm text-gray-700">البريد الإلكتروني</label>
           <input
             className="input"
-            type="tel"
-            placeholder="+201xxxxxxxxx"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -70,7 +80,7 @@ export default function LoginPage() {
 
       {step === "code" && (
         <form onSubmit={verifyCode} className="space-y-3">
-          <label className="block text-sm text-gray-700">كود التحقق المرسل إلى {phone}</label>
+          <label className="block text-sm text-gray-700">كود التحقق المرسل إلى {email}</label>
           <input
             className="input"
             inputMode="numeric"
@@ -86,9 +96,9 @@ export default function LoginPage() {
           <button
             type="button"
             className="w-full text-sm text-gray-500"
-            onClick={() => setStep("phone")}
+            onClick={() => setStep("email")}
           >
-            تغيير رقم التليفون
+            تغيير البريد الإلكتروني
           </button>
         </form>
       )}
