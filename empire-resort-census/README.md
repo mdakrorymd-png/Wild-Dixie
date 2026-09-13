@@ -42,11 +42,12 @@ empire-resort-census/
 4. `cd app && cp .env.local.example .env.local` and fill in your project's
    URL + anon key.
 5. `npm install && npm run dev` → http://localhost:3000.
-6. Load the real 650 units into the `units` table (unit_number + stage_id)
-   — **this is not seeded by this repo**; the spec doesn't supply the real
-   unit list, and this repo has no source for it. Load it via CSV import in
-   the Supabase table editor or a one-off `insert into units (...) values
-   (...)` script once you have the real roster.
+6. Load the 3 project stages into `project_stages` (2007/2010/2013,
+   key + label) — not seeded by this repo. Units are **not** pre-loaded:
+   an owner types their own unit number at registration and the app
+   creates the `units` row on the fly if it doesn't exist yet (see
+   deviation #3 below) — no need to source the real 650-unit roster
+   before launch.
 7. Bootstrap the first `super_admin`: after they sign up once through the
    app (so `auth.users` has their row), run in the SQL editor:
    ```sql
@@ -107,7 +108,7 @@ survey copy (§6/§8) — is unchanged from spec.
 | Personal vs. statistical separation | `owner_names` / `owner_phones` (personal) vs. `owners` + `*_public_stats` views (statistical); see deviation #1 above. |
 | No leading questions / no score | `app/lib/constants.ts` is the single source of survey copy, copied verbatim from spec §6/§8; nothing computes a stance/loyalty score anywhere. |
 | No public exposure of name+position | Personal tables (`owner_names`, `owner_phones`) are never joined into any `*_public_stats` view; the export route (`app/api/export/route.ts`) reads exclusively from those views. |
-| Unit de-duplication | `owners.unit_id` is `unique not null` — enforced by Postgres, not the UI. |
+| Unit de-duplication | `owners.unit_id` is `unique not null`, and `units.unit_number` is `unique` — both enforced by Postgres, not the UI. Free-typed unit numbers are normalized (case/whitespace/dash-insensitive) before matching so `A-101`/`a 101`/`A101` all resolve to the same unit. |
 | Immutable audit log | `supabase/migrations/0003_audit.sql` — `write_audit_log()` is the only writer (via triggers, `security definer`); `authenticated`/`anon` have no INSERT/UPDATE/DELETE grant on `audit_logs` at all. |
 | Identity check before official stats | There is no real verifiable identity source (spec §4) — self-reported data counts immediately; `verification_status = 'disputed'` is the one manual exception, and every `*_public_stats` view filters it out until a manager reverts it. |
 
