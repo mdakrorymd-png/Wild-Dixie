@@ -14,6 +14,7 @@ export default async function Navbar() {
   if (user.ownerId) links.push({ href: "/payments", label: "المدفوعات" });
   if (canManage(user.role)) {
     links.push({ href: "/owners", label: "قائمة الملاك" });
+    links.push({ href: "/payments-review", label: "مراجعة الإيصالات" });
     links.push({ href: "/admin", label: "الإعدادات" });
   }
   if (user.role === "volunteer" || canManage(user.role)) {
