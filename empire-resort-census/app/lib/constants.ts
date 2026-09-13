@@ -69,3 +69,5 @@ export const CONTACT_OUTCOME_OPTIONS = [
 ] as const;
 
 export const STAGE_KEYS = ["2007", "2010", "2013"] as const;
+
+export const MAINTENANCE_CHARGE_YEARS = ["2025", "2026"] as const;

@@ -11,6 +11,7 @@ export default async function Navbar() {
     { href: "/stages", label: "مقارنة المراحل" },
   ];
   if (user.ownerId) links.push({ href: "/me", label: "بياناتي" });
+  if (user.ownerId) links.push({ href: "/payments", label: "المدفوعات" });
   if (canManage(user.role)) {
     links.push({ href: "/owners", label: "قائمة الملاك" });
     links.push({ href: "/admin", label: "الإعدادات" });

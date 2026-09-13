@@ -77,6 +77,16 @@ export interface PaymentStatusRow {
   updated_at: string;
 }
 
+export interface MaintenancePaymentRow {
+  id: string;
+  owner_id: string;
+  charge_year: "2025" | "2026";
+  amount_declared: number | null;
+  receipt_path: string;
+  note: string | null;
+  created_at: string;
+}
+
 export interface VolunteerRow {
   id: string;
   auth_user_id: string | null;
@@ -178,6 +188,7 @@ export interface Database {
       main_position_responses: TableDef<MainPositionResponseRow>;
       participation_responses: TableDef<ParticipationResponseRow>;
       payment_status: TableDef<PaymentStatusRow>;
+      maintenance_payments: TableDef<MaintenancePaymentRow>;
       volunteers: TableDef<VolunteerRow>;
       contact_attempts: TableDef<ContactAttemptRow>;
       user_roles: TableDef<UserRoleRow>;
