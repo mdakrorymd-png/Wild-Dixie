@@ -1,55 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-// Real Supabase Auth email-OTP flow. There is no "pick a role" shortcut —
-// signInWithOtp/verifyOtp are the only doors in, per spec §2 constraint 1.
+// Real Supabase Auth email-OTP flow — a clicked sign-in link, not a typed
+// code. There is no "pick a role" shortcut; this is the only door in, per
+// spec §2 constraint 1.
 //
 // Originally phone-OTP per the spec's literal text; switched to email-OTP
 // because phone OTP requires a paid SMS gateway (Twilio et al.) with no
-// free tier that works past a handful of manually-verified numbers, and
-// this project needs a genuinely free option to test with. Supabase's
-// built-in email sending is free (rate-limited — fine for testing, but
-// plug in real SMTP, e.g. Resend/SendGrid, before onboarding 650 owners
-// for real). The phone number is NOT gone from the system — it's still
-// collected and still unique-enforced in owner_phones (see onboarding) —
-// it's just no longer the login channel.
+// free tier that works past a handful of manually-verified numbers.
+// Supabase's built-in email sender only sends a magic link (not a typed
+// code) unless custom SMTP is configured to customize the template — so
+// this goes through the link, handled by app/auth/callback/route.ts. The
+// phone number is NOT gone from the system — it's still collected and
+// still unique-enforced in owner_phones (see onboarding) — it's just not
+// the login channel.
 export default function LoginPage() {
-  const router = useRouter();
   const supabase = createClient();
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [step, setStep] = useState<"email" | "code">("email");
+  const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function sendCode(e: React.FormEvent) {
+  async function sendLink(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    });
     setLoading(false);
     if (error) {
       setError(error.message);
       return;
     }
-    setStep("code");
-  }
-
-  async function verifyCode(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    const { error } = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
-    setLoading(false);
-    if (error) {
-      setError(error.message);
-      return;
-    }
-    router.push("/");
-    router.refresh();
+    setSent(true);
   }
 
   return (
@@ -60,8 +47,22 @@ export default function LoginPage() {
         معين.
       </p>
 
-      {step === "email" && (
-        <form onSubmit={sendCode} className="space-y-3">
+      {sent ? (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-700">
+            بعتنالك رابط تسجيل الدخول على <span className="font-semibold">{email}</span>. افتح
+            بريدك الإلكتروني ودوس على الرابط للدخول.
+          </p>
+          <button
+            type="button"
+            className="w-full text-sm text-gray-500"
+            onClick={() => setSent(false)}
+          >
+            تغيير البريد الإلكتروني
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={sendLink} className="space-y-3">
           <label className="block text-sm text-gray-700">البريد الإلكتروني</label>
           <input
             className="input"
@@ -73,32 +74,7 @@ export default function LoginPage() {
           />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button className="btn-primary w-full" disabled={loading}>
-            {loading ? "جاري الإرسال..." : "إرسال كود التحقق"}
-          </button>
-        </form>
-      )}
-
-      {step === "code" && (
-        <form onSubmit={verifyCode} className="space-y-3">
-          <label className="block text-sm text-gray-700">كود التحقق المرسل إلى {email}</label>
-          <input
-            className="input"
-            inputMode="numeric"
-            placeholder="123456"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            required
-          />
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button className="btn-primary w-full" disabled={loading}>
-            {loading ? "جاري التحقق..." : "تأكيد"}
-          </button>
-          <button
-            type="button"
-            className="w-full text-sm text-gray-500"
-            onClick={() => setStep("email")}
-          >
-            تغيير البريد الإلكتروني
+            {loading ? "جاري الإرسال..." : "إرسال رابط الدخول"}
           </button>
         </form>
       )}
