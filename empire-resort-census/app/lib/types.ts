@@ -53,6 +53,7 @@ export interface TopicResponseRow {
   owner_id: string;
   topic_key: string;
   stance: string;
+  detail: string | null;
   updated_at: string;
 }
 
