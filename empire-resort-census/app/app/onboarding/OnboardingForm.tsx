@@ -1,27 +1,16 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { registerOwner } from "./actions";
-import type { ProjectStageRow, UnitAvailableRow } from "@/lib/types";
+import type { ProjectStageRow } from "@/lib/types";
 
-export default function OnboardingForm({
-  stages,
-  units,
-}: {
-  stages: ProjectStageRow[];
-  units: UnitAvailableRow[];
-}) {
+export default function OnboardingForm({ stages }: { stages: ProjectStageRow[] }) {
   const [stageId, setStageId] = useState("");
-  const [unitId, setUnitId] = useState("");
+  const [unitNumber, setUnitNumber] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-
-  const filteredUnits = useMemo(
-    () => (stageId ? units.filter((u) => u.stage_id === stageId) : units),
-    [stageId, units]
-  );
 
   function submit(formData: FormData) {
     setError(null);
@@ -36,14 +25,13 @@ export default function OnboardingForm({
       <div>
         <label className="mb-1 block text-sm text-gray-700">المرحلة</label>
         <select
+          name="stage_id"
           className="input"
           value={stageId}
-          onChange={(e) => {
-            setStageId(e.target.value);
-            setUnitId("");
-          }}
+          onChange={(e) => setStageId(e.target.value)}
+          required
         >
-          <option value="">كل المراحل</option>
+          <option value="">اختر المرحلة</option>
           {stages.map((s) => (
             <option key={s.id} value={s.id}>
               {s.label}
@@ -54,26 +42,14 @@ export default function OnboardingForm({
 
       <div>
         <label className="mb-1 block text-sm text-gray-700">رقم الوحدة</label>
-        <select
-          name="unit_id"
+        <input
+          name="unit_number"
           className="input"
-          value={unitId}
-          onChange={(e) => setUnitId(e.target.value)}
+          placeholder="مثال: A-101"
+          value={unitNumber}
+          onChange={(e) => setUnitNumber(e.target.value)}
           required
-        >
-          <option value="">اختر وحدتك</option>
-          {filteredUnits.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.unit_number}
-              {u.building ? ` — ${u.building}` : ""}
-            </option>
-          ))}
-        </select>
-        {filteredUnits.length === 0 && (
-          <p className="mt-1 text-xs text-red-600">
-            كل وحدات هذه المرحلة مسجّلة بالفعل، أو لا توجد وحدات محمّلة بعد.
-          </p>
-        )}
+        />
       </div>
 
       <div>

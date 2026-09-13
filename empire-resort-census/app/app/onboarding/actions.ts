@@ -7,12 +7,24 @@ export interface RegisterResult {
   error?: string;
 }
 
+// Free-typed unit numbers, not a pre-loaded list — no real 650-unit roster
+// was ever provided (see README). Normalizing before storing/matching
+// (case + whitespace/dash-insensitive) is what keeps the DB-level
+// de-duplication requirement real despite free text: "A-101", "a 101" and
+// "A101" all resolve to the same underlying unit row, and
+// owners.unit_id UNIQUE (0001_schema.sql) still blocks a second owner
+// from claiming it.
+function normalizeUnitNumber(raw: string) {
+  return raw.trim().toUpperCase().replace(/[\s-]+/g, "");
+}
+
 // Runs as the authenticated caller (not service-role), so every insert
-// here is still subject to the RLS policies in 0004_rls.sql — the unit
-// UNIQUE constraint and the phone UNIQUE constraint are what actually
-// stop double-registration, not this function's logic. Login is by email
-// OTP (see app/login), so the phone entered here is self-reported, same
-// as the name — its only enforcement is the DB uniqueness constraint.
+// here is still subject to the RLS policies in 0004_rls.sql/0007_units_self_insert.sql
+// — the unit UNIQUE constraint and the phone UNIQUE constraint are what
+// actually stop double-registration, not this function's logic. Login is
+// by email OTP (see app/login), so the phone entered here is
+// self-reported, same as the name — its only enforcement is the DB
+// uniqueness constraint.
 export async function registerOwner(formData: FormData): Promise<RegisterResult> {
   const supabase = await createClient();
   const {
@@ -20,11 +32,49 @@ export async function registerOwner(formData: FormData): Promise<RegisterResult>
   } = await supabase.auth.getUser();
   if (!user) return { error: "الجلسة منتهية، برجاء تسجيل الدخول من جديد." };
 
-  const unitId = formData.get("unit_id") as string;
+  const stageId = formData.get("stage_id") as string;
+  const unitNumberRaw = (formData.get("unit_number") as string)?.trim();
   const fullName = (formData.get("full_name") as string)?.trim();
   const phone = (formData.get("phone") as string)?.trim();
-  if (!unitId || !fullName || !phone) {
-    return { error: "برجاء اختيار الوحدة وإدخال الاسم ورقم التليفون." };
+  if (!stageId || !unitNumberRaw || !fullName || !phone) {
+    return { error: "برجاء اختيار المرحلة وكتابة رقم الوحدة والاسم ورقم التليفون." };
+  }
+
+  const unitNumber = normalizeUnitNumber(unitNumberRaw);
+
+  const { data: existingUnit } = await supabase
+    .from("units")
+    .select("id")
+    .eq("unit_number", unitNumber)
+    .maybeSingle();
+
+  let unitId: string;
+  if (existingUnit) {
+    unitId = existingUnit.id;
+  } else {
+    const { data: newUnit, error: unitError } = await supabase
+      .from("units")
+      .insert({ unit_number: unitNumber, stage_id: stageId })
+      .select("id")
+      .single();
+
+    if (unitError && unitError.code !== "23505") {
+      return { error: unitError.message };
+    }
+
+    if (unitError) {
+      // Race: another registration created the same unit between our
+      // select and insert. Fetch the row it created instead.
+      const { data: raceUnit } = await supabase
+        .from("units")
+        .select("id")
+        .eq("unit_number", unitNumber)
+        .maybeSingle();
+      if (!raceUnit) return { error: unitError.message };
+      unitId = raceUnit.id;
+    } else {
+      unitId = newUnit!.id;
+    }
   }
 
   const { data: owner, error: ownerError } = await supabase
