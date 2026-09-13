@@ -70,6 +70,11 @@ export const PAYMENT_STATUS_OPTIONS = [
   "غير محدد",
 ] as const;
 
+// Not from the original spec — added afterward as a closing catch-all so
+// a concern that doesn't fit any of the 9 fixed topics above still has
+// somewhere to go, instead of being lost or forced into the wrong box.
+export const GENERAL_NOTE_QUESTION = "هل تريد إضافة أي رأي أو ملاحظة لم تُذكر أعلاه؟";
+
 export const CONTACT_STATUS_OPTIONS = ["تم التواصل", "لم يتم التواصل"] as const;
 
 export const CENSUS_STATUS_OPTIONS = ["مكتمل", "جزئي", "لم يبدأ"] as const;

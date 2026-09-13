@@ -11,6 +11,7 @@ import {
   PARTICIPATION_QUESTION,
   PARTICIPATION_OPTIONS,
   PAYMENT_STATUS_OPTIONS,
+  GENERAL_NOTE_QUESTION,
 } from "@/lib/constants";
 import type {
   MainPositionResponseRow,
@@ -24,11 +25,13 @@ export default function SurveyForm({
   initialTopics,
   initialParticipation,
   initialPaymentStatus,
+  initialGeneralNote,
 }: {
   initialMainPositions: MainPositionResponseRow[];
   initialTopics: TopicResponseRow[];
   initialParticipation: ParticipationResponseRow[];
   initialPaymentStatus: string | null;
+  initialGeneralNote: string | null;
 }) {
   const initialFreeTextRow = initialMainPositions.find(
     (r) => r.position_text === MAIN_POSITION_FREE_TEXT_LABEL
@@ -169,6 +172,17 @@ export default function SurveyForm({
             </option>
           ))}
         </select>
+      </section>
+
+      <section className="card">
+        <h2 className="mb-3 font-semibold text-brand">{GENERAL_NOTE_QUESTION}</h2>
+        <textarea
+          name="general_note"
+          className="input"
+          rows={4}
+          defaultValue={initialGeneralNote ?? ""}
+          placeholder="اكتب أي رأي أو ملاحظة حرة (اختياري)"
+        />
       </section>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

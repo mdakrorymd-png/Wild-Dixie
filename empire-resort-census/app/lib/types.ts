@@ -78,6 +78,12 @@ export interface PaymentStatusRow {
   updated_at: string;
 }
 
+export interface GeneralNoteRow {
+  owner_id: string;
+  note: string | null;
+  updated_at: string;
+}
+
 export interface MaintenancePaymentRow {
   id: string;
   owner_id: string;
