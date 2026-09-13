@@ -9,13 +9,19 @@ export default async function SurveyPage() {
   if (!user.ownerId) redirect("/onboarding");
 
   const supabase = await createClient();
-  const [{ data: mainPositions }, { data: topics }, { data: participation }, { data: payment }] =
-    await Promise.all([
-      supabase.from("main_position_responses").select("*").eq("owner_id", user.ownerId),
-      supabase.from("topic_responses").select("*").eq("owner_id", user.ownerId),
-      supabase.from("participation_responses").select("*").eq("owner_id", user.ownerId),
-      supabase.from("payment_status").select("*").eq("owner_id", user.ownerId).maybeSingle(),
-    ]);
+  const [
+    { data: mainPositions },
+    { data: topics },
+    { data: participation },
+    { data: payment },
+    { data: generalNote },
+  ] = await Promise.all([
+    supabase.from("main_position_responses").select("*").eq("owner_id", user.ownerId),
+    supabase.from("topic_responses").select("*").eq("owner_id", user.ownerId),
+    supabase.from("participation_responses").select("*").eq("owner_id", user.ownerId),
+    supabase.from("payment_status").select("*").eq("owner_id", user.ownerId).maybeSingle(),
+    supabase.from("general_notes").select("*").eq("owner_id", user.ownerId).maybeSingle(),
+  ]);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -29,6 +35,7 @@ export default async function SurveyPage() {
         initialTopics={topics ?? []}
         initialParticipation={participation ?? []}
         initialPaymentStatus={payment?.status ?? null}
+        initialGeneralNote={generalNote?.note ?? null}
       />
     </div>
   );

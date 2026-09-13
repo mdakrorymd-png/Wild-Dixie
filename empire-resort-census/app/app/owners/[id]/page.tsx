@@ -29,6 +29,7 @@ export default async function OwnerProfilePage({
     { data: topics },
     { data: participation },
     { data: payment },
+    { data: generalNote },
     { data: attempts },
     { data: maintenancePayments },
   ] = await Promise.all([
@@ -38,6 +39,7 @@ export default async function OwnerProfilePage({
     supabase.from("topic_responses").select("*").eq("owner_id", id),
     supabase.from("participation_responses").select("*").eq("owner_id", id),
     supabase.from("payment_status").select("status").eq("owner_id", id).maybeSingle(),
+    supabase.from("general_notes").select("note").eq("owner_id", id).maybeSingle(),
     supabase
       .from("contact_attempts")
       .select("*")
@@ -163,6 +165,13 @@ export default async function OwnerProfilePage({
           ))}
         </ul>
       </div>
+
+      {generalNote?.note && (
+        <div className="card space-y-2">
+          <h2 className="font-semibold text-brand">ملاحظة عامة</h2>
+          <p className="text-sm text-gray-600">{generalNote.note}</p>
+        </div>
+      )}
 
       <div className="card space-y-2">
         <h2 className="font-semibold text-brand">مدفوعات فروق الصيانة (٢٠٢٥ / ٢٠٢٦)</h2>

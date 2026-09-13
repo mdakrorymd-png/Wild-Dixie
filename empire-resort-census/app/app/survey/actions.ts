@@ -75,6 +75,13 @@ export async function saveSurvey(formData: FormData): Promise<SaveSurveyResult> 
     if (error) return { error: error.message };
   }
 
+  // ── general note: a genuine catch-all, no fixed options, always overwrite ──
+  const generalNote = (formData.get("general_note") as string)?.trim() || null;
+  const { error: noteError } = await supabase
+    .from("general_notes")
+    .upsert({ owner_id: owner.id, note: generalNote }, { onConflict: "owner_id" });
+  if (noteError) return { error: noteError.message };
+
   // ── census completion status, computed from what was actually filled ──
   const { count: topicCount } = await supabase
     .from("topic_responses")
