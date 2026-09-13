@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { canManage, getCurrentUser } from "@/lib/auth";
-import { CONTACT_OUTCOME_OPTIONS, CONTACT_STATUS_OPTIONS } from "@/lib/constants";
+import { CONTACT_OUTCOME_OPTIONS, CONTACT_STATUS_OPTIONS, TOPIC_SECTIONS } from "@/lib/constants";
 import { addContactAttempt, setVerificationStatus, updateContactStatus } from "./actions";
 
 export default async function OwnerProfilePage({
@@ -137,15 +137,21 @@ export default async function OwnerProfilePage({
       </div>
 
       <div className="card space-y-2">
-        <h2 className="font-semibold text-brand">الأقسام الثمانية</h2>
+        <h2 className="font-semibold text-brand">الأقسام المستقلة</h2>
         {(topics ?? []).length === 0 && <p className="text-sm text-muted">لا توجد ردود.</p>}
         <dl className="space-y-2 text-sm">
-          {(topics ?? []).map((t) => (
-            <div key={t.id}>
-              <dt className="font-medium text-gray-700">{t.topic_key}</dt>
-              <dd className="text-gray-600">{t.stance}</dd>
-            </div>
-          ))}
+          {(topics ?? []).map((t) => {
+            const section = TOPIC_SECTIONS.find((s) => s.key === t.topic_key);
+            return (
+              <div key={t.id}>
+                <dt className="font-medium text-gray-700">{section?.label ?? t.topic_key}</dt>
+                <dd className="text-gray-600">
+                  {t.stance}
+                  {t.detail ? ` — ${t.detail}` : ""}
+                </dd>
+              </div>
+            );
+          })}
         </dl>
       </div>
 

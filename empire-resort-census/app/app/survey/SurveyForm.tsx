@@ -6,6 +6,8 @@ import {
   MAIN_POSITION_OPTIONS,
   MAIN_POSITION_FREE_TEXT_LABEL,
   TOPIC_SECTIONS,
+  TOPIC_SATISFACTION_OPTIONS,
+  TOPIC_STANCE_OPTIONS,
   PARTICIPATION_QUESTION,
   PARTICIPATION_OPTIONS,
   PAYMENT_STATUS_OPTIONS,
@@ -41,8 +43,7 @@ export default function SurveyForm({
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const topicStance = (key: string) =>
-    initialTopics.find((t) => t.topic_key === key)?.stance ?? "";
+  const topicResponse = (key: string) => initialTopics.find((t) => t.topic_key === key);
 
   function toggle(list: string[], setList: (v: string[]) => void, value: string) {
     setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
@@ -107,18 +108,36 @@ export default function SurveyForm({
 
       <section className="card space-y-4">
         <h2 className="font-semibold text-brand">أقسام مستقلة — رأيك في كل موضوع</h2>
-        {TOPIC_SECTIONS.map((topic) => (
-          <div key={topic.key}>
-            <label className="mb-1 block text-sm font-medium text-gray-700">{topic.label}</label>
-            <textarea
-              name={`topic_${topic.key}`}
-              className="input"
-              rows={2}
-              defaultValue={topicStance(topic.key)}
-              placeholder="اكتب رأيك بحرية (اختياري)"
-            />
-          </div>
-        ))}
+        {TOPIC_SECTIONS.map((topic) => {
+          const options =
+            topic.type === "satisfaction" ? TOPIC_SATISFACTION_OPTIONS : TOPIC_STANCE_OPTIONS;
+          const existing = topicResponse(topic.key);
+          return (
+            <div key={topic.key} className="space-y-2 border-b border-gray-100 pb-4 last:border-0">
+              <label className="block text-sm font-medium text-gray-700">{topic.label}</label>
+              <div className="flex flex-wrap gap-3">
+                {options.map((opt) => (
+                  <label key={opt} className="flex items-center gap-1 text-sm">
+                    <input
+                      type="radio"
+                      name={`topic_${topic.key}`}
+                      value={opt}
+                      defaultChecked={existing?.stance === opt}
+                    />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+              </div>
+              <textarea
+                name={`topic_${topic.key}_detail`}
+                className="input"
+                rows={2}
+                defaultValue={existing?.detail ?? ""}
+                placeholder="تفاصيل إضافية (اختياري)"
+              />
+            </div>
+          );
+        })}
       </section>
 
       <section className="card">

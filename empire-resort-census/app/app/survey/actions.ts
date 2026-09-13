@@ -45,14 +45,15 @@ export async function saveSurvey(formData: FormData): Promise<SaveSurveyResult> 
     if (error) return { error: error.message };
   }
 
-  // ── the 8 topic sections: upsert, skip empty ──
+  // ── the 9 topic sections: upsert, skip empty ──
   for (const topic of TOPIC_SECTIONS) {
     const stance = (formData.get(`topic_${topic.key}`) as string)?.trim();
     if (!stance) continue;
+    const detail = (formData.get(`topic_${topic.key}_detail`) as string)?.trim() || null;
     const { error } = await supabase
       .from("topic_responses")
       .upsert(
-        { owner_id: owner.id, topic_key: topic.key, stance },
+        { owner_id: owner.id, topic_key: topic.key, stance, detail },
         { onConflict: "owner_id,topic_key" }
       );
     if (error) return { error: error.message };

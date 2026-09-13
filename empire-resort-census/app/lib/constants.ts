@@ -18,18 +18,32 @@ export const MAIN_POSITION_OPTIONS = [
 
 export const MAIN_POSITION_FREE_TEXT_LABEL = "لدي رأي مختلف وأريد شرحه";
 
+// Each topic is either a satisfaction rating (about a party/service) or a
+// stance (support/oppose a proposed path forward) — the option set shown
+// depends on which. Both scales are symmetric with an explicit
+// neutral/no-opinion option, so neither leads toward a particular answer.
 export const TOPIC_SECTIONS = [
-  { key: "electricity", label: "الكهرباء" },
-  { key: "water", label: "المياه" },
-  { key: "maintenance", label: "الصيانة والمديونيات" },
-  { key: "management", label: "الإدارة" },
-  { key: "developer", label: "المطوّر" },
-  { key: "legal", label: "الحل القانوني" },
-  { key: "collective", label: "الحل الجماعي" },
-  { key: "future", label: "المستقبل" },
+  { key: "electricity", label: "الكهرباء", type: "satisfaction" },
+  { key: "water", label: "المياه", type: "satisfaction" },
+  { key: "maintenance", label: "الصيانة والمديونيات", type: "satisfaction" },
+  { key: "management_current", label: "الإدارة الحالية", type: "satisfaction" },
+  { key: "management_previous", label: "الإدارة السابقة", type: "satisfaction" },
+  { key: "developer", label: "المطوّر", type: "satisfaction" },
+  { key: "legal", label: "الحل القانوني", type: "stance" },
+  { key: "collective", label: "الحل الجماعي", type: "stance" },
+  { key: "future", label: "المستقبل", type: "stance" },
 ] as const;
 
 export type TopicKey = (typeof TOPIC_SECTIONS)[number]["key"];
+
+export const TOPIC_SATISFACTION_OPTIONS = [
+  "راضٍ تمامًا",
+  "راضٍ جزئيًا",
+  "غير راضٍ",
+  "محايد / لا رأي",
+] as const;
+
+export const TOPIC_STANCE_OPTIONS = ["أؤيده", "أعارضه", "غير متأكد", "لا رأي"] as const;
 
 export const PARTICIPATION_QUESTION =
   "هل ترغب في المشاركة في أي أنشطة مستقبلية تخص ملاك Empire Resort؟";
