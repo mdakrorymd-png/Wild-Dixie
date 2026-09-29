@@ -7,6 +7,7 @@ import { AppMain } from "@/components/AppMain";
 import { Footer } from "@/components/Footer";
 import { PWA } from "@/components/PWA";
 import { WhatsAppFab } from "@/components/WhatsAppFab";
+import { Analytics } from "@/components/Analytics";
 import { SITE_URL } from "@/lib/site";
 import { OG_DEFAULT } from "@/lib/images";
 
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Footer />
           <WhatsAppFab />
           <PWA />
+          <Analytics />
         </AuthProvider>
       </body>
     </html>

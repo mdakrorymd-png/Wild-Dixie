@@ -1,5 +1,7 @@
 "use client";
 
+import { track } from "@/lib/track";
+
 const NUMBER = process.env.NEXT_PUBLIC_WHATSAPP ?? "201033388003";
 
 export function WhatsAppFab() {
@@ -10,6 +12,7 @@ export function WhatsAppFab() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="تواصل واتساب"
+      onClick={() => track("whatsapp_click", { placement: "fab" })}
       className="no-print fixed bottom-5 left-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_10px_30px_-6px_rgba(37,211,102,0.6)] transition hover:scale-105"
     >
       <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden>

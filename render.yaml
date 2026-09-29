@@ -56,5 +56,9 @@ services:
         value: "201033388003"
       - key: NEXT_PUBLIC_SITE_URL
         sync: false
+      # Set these two in the Render dashboard to turn on analytics (see components/Analytics.tsx) —
+      # empty by default so nothing tracks until real IDs are added.
       - key: NEXT_PUBLIC_FB_PIXEL_ID
+        sync: false
+      - key: NEXT_PUBLIC_GA_ID
         sync: false

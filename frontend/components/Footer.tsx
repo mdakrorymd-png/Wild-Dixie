@@ -30,6 +30,7 @@ export function Footer() {
           <h4 className="mb-3 font-bold text-white">للضيوف</h4>
           <ul className="space-y-2 text-sm">
             <li><Link href="/sokhna" className="hover:text-gold">احجز في السخنة</Link></li>
+            <li><Link href="/cancellation" className="hover:text-gold">سياسة الإلغاء</Link></li>
             <li><span className="text-white/45">الدفع: إنستاباي / فودافون كاش</span></li>
             <li><span className="text-white/45">المرافق على الضيف</span></li>
           </ul>
@@ -45,7 +46,9 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/40">
-        © Wild Dixie Escapes 2026 · الشروط · الخصوصية
+        © Wild Dixie Escapes 2026 ·{" "}
+        <Link href="/terms" className="hover:text-gold">الشروط</Link> ·{" "}
+        <Link href="/privacy" className="hover:text-gold">الخصوصية</Link>
       </div>
     </footer>
   );

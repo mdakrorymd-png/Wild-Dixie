@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from sqlalchemy import Integer, Numeric, String, Text
+from sqlalchemy import Integer, Numeric, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -15,6 +15,9 @@ class Lead(UUIDMixin, TimestampMixin, Base):
 
     # "owner_estimate" (earnings estimator/owner signup) | "waitlist" (area coming soon)
     kind: Mapped[str] = mapped_column(String(30), nullable=False, default="owner_estimate", index=True)
+    # Pipeline stage: new -> contacted -> qualified -> (won | lost). Free string
+    # (not a DB enum) to match `kind` and keep adding stages a no-migration change.
+    status: Mapped[str] = mapped_column(String(20), nullable=False, server_default=text("'new'"), index=True)
     full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     whatsapp: Mapped[str | None] = mapped_column(String(30), nullable=True)
     area: Mapped[str | None] = mapped_column(String(100), nullable=True)

@@ -179,4 +179,8 @@ export const api = {
     request(`/admin/payments/${id}/reject`, { method: "POST", body: JSON.stringify({ notes }) }),
   adminDisputes: () =>
     request<{ id: string; booking_id: string; reason: string; status: string }[]>("/admin/disputes"),
+  adminListLeads: (params: { kind?: string; status?: string } = {}) =>
+    request<import("./types").Lead[]>(`/leads${qs(params)}`),
+  adminUpdateLeadStatus: (id: string, status: string) =>
+    request<import("./types").Lead>(`/leads/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
 };

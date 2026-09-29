@@ -58,7 +58,7 @@ export function Pricing() {
         <h2 className="mt-1 text-3xl font-bold sm:text-4xl">باكدجات الإدارة الكاملة</h2>
         <p className="mx-auto mt-2 max-w-xl text-sm text-black/55">
           للي عايز يسيب التشغيل علينا بالكامل — من غير مقدّم وتجربة قابلة للإلغاء. مش عايز إدارة؟{" "}
-          <Link href="/#list" className="font-semibold text-gold-dark underline-offset-2 hover:underline">اعرض وحدتك مجانًا</Link>{" "}
+          <Link href="/host/new" className="font-semibold text-gold-dark underline-offset-2 hover:underline">اعرض وحدتك مجانًا</Link>{" "}
           وادفع عمولة ١٠٪ على الحجز بس.
         </p>
       </div>

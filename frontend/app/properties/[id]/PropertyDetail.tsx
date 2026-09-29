@@ -9,6 +9,7 @@ import type { Property, Quote, PriceQuote } from "@/lib/types";
 import { egp, propertyTypeAr } from "@/lib/format";
 import { galleryImages } from "@/lib/images";
 import { ShareProperty } from "@/components/ShareProperty";
+import { track } from "@/lib/track";
 
 export function PropertyDetail({ id }: { id: string }) {
   const router = useRouter();
@@ -49,8 +50,10 @@ export function PropertyDetail({ id }: { id: string }) {
     if (!user) return router.push("/login");
     setBusy(true);
     setError(null);
+    track("booking_started", { property_id: id, nights: quote?.nights, is_deposit: isDeposit });
     try {
       const booking = await api.createBooking({ property_id: id, check_in: checkIn, check_out: checkOut, guests, is_deposit: isDeposit, car_plate: carPlate || undefined });
+      track("booking_completed", { property_id: id, booking_id: booking.id, value: quote?.total_amount });
       router.push(`/bookings/${booking.id}`);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "تعذّر إنشاء الحجز");
