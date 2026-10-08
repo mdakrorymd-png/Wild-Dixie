@@ -1,0 +1,11 @@
+{
+  "name": "wild-dixie-tiktok-owner-ad",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "render": "node capture.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}

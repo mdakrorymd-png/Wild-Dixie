@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Wild Dixie — إعلان تيك توك لملّاك الشاليهات (١٥ ثانية، ١٠٨٠×١٩٢٠)</title>
+<style>
+  /* ---------- Fonts (local, offline) ---------- */
+  @font-face { font-family:'Cairo'; font-style:normal; font-weight:600;
+    src:url(assets/fonts/cairo-600-arabic.woff2) format('woff2');
+    unicode-range:U+0600-06FF,U+0750-077F,U+FB50-FDFF,U+FE70-FEFC,U+200C-200E; }
+  @font-face { font-family:'Cairo'; font-style:normal; font-weight:600;
+    src:url(assets/fonts/cairo-600-latin.woff2) format('woff2');
+    unicode-range:U+0000-00FF,U+2000-206F; }
+  @font-face { font-family:'Cairo'; font-style:normal; font-weight:700;
+    src:url(assets/fonts/cairo-700-arabic.woff2) format('woff2');
+    unicode-range:U+0600-06FF,U+0750-077F,U+FB50-FDFF,U+FE70-FEFC,U+200C-200E; }
+  @font-face { font-family:'Cairo'; font-style:normal; font-weight:700;
+    src:url(assets/fonts/cairo-700-latin.woff2) format('woff2');
+    unicode-range:U+0000-00FF,U+2000-206F; }
+  @font-face { font-family:'Cairo'; font-style:normal; font-weight:800;
+    src:url(assets/fonts/cairo-800-arabic.woff2) format('woff2');
+    unicode-range:U+0600-06FF,U+0750-077F,U+FB50-FDFF,U+FE70-FEFC,U+200C-200E; }
+  @font-face { font-family:'Cairo'; font-style:normal; font-weight:800;
+    src:url(assets/fonts/cairo-800-latin.woff2) format('woff2');
+    unicode-range:U+0000-00FF,U+2000-206F; }
+  @font-face { font-family:'Cairo'; font-style:normal; font-weight:900;
+    src:url(assets/fonts/cairo-900-arabic.woff2) format('woff2');
+    unicode-range:U+0600-06FF,U+0750-077F,U+FB50-FDFF,U+FE70-FEFC,U+200C-200E; }
+  @font-face { font-family:'Cairo'; font-style:normal; font-weight:900;
+    src:url(assets/fonts/cairo-900-latin.woff2) format('woff2');
+    unicode-range:U+0000-00FF,U+2000-206F; }
+
+  /* ---------- Palette: trust-first premium ---------- */
+  :root{
+    --navy-deep:#081826;
+    --navy:#0C2A3E;
+    --navy-soft:#12405C;
+    --sand:#EADFC8;
+    --white:#F8F4EB;
+    --gold:#E0A83E;
+    --gold-deep:#C9922E;
+    --terra:#DE6A5A; /* "empty" marker — muted terracotta, not alarm red */
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ background:#000; }
+  body{ font-family:'Cairo',sans-serif; -webkit-font-smoothing:antialiased; }
+
+  /* ---------- Stage: 1080 x 1920 ---------- */
+  #stage{
+    position:relative; width:1080px; height:1920px; overflow:hidden;
+    background:
+      radial-gradient(140% 90% at 30% 12%, var(--navy-soft) 0%, var(--navy) 42%, var(--navy-deep) 100%);
+    color:var(--white);
+  }
+  /* soft vignette for premium depth */
+  #stage::after{
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(120% 120% at 50% 45%, transparent 55%, rgba(4,10,16,.55) 100%);
+  }
+
+  .scene{ position:absolute; inset:0; }
+
+  /* =========================================================
+     PERSISTENT WORDMARK  (top, inside safe zone)
+     ========================================================= */
+  #wordmark{
+    position:absolute; top:150px; left:0; right:0; z-index:5;
+    display:flex; align-items:center; justify-content:center; gap:20px;
+    animation:fadeDown .6s ease-out .05s both;
+  }
+  #wordmark .wm-text{
+    font-weight:700; font-size:40px; letter-spacing:10px; color:var(--gold);
+    direction:ltr;
+  }
+
+  /* =========================================================
+     SCENE A — HOOK (0–2s) + FLIP (2–6s)  |  shared calendar
+     ========================================================= */
+  #sc-a{ animation:sceneAOut .45s ease-in 5.55s both; }
+  @keyframes sceneAOut{ to{ opacity:0; transform:translateY(-46px) scale(.985); } }
+
+  .headline-slot{
+    position:absolute; top:288px; left:120px; right:120px;
+    text-align:center;
+  }
+  #hook{
+    font-weight:900; font-size:80px; line-height:1.4; color:var(--white);
+    white-space:nowrap;
+    animation:popIn .45s cubic-bezier(.2,1.2,.4,1) .1s both,
+              hookOut .35s ease-in 1.9s forwards;
+  }
+  #hook .accent{ color:var(--terra); }
+  @keyframes hookOut{ to{ opacity:0; transform:translateY(-34px); } }
+
+  #fliptext{
+    position:absolute; inset:0; opacity:0; white-space:nowrap;
+    font-weight:900; font-size:76px; line-height:1.4; color:var(--gold);
+    text-shadow:0 6px 40px rgba(224,168,62,.25);
+    animation:popIn .5s cubic-bezier(.2,1.2,.4,1) 2.1s both;
+  }
+  #fliptext small{
+    display:block; font-weight:700; font-size:42px; color:var(--sand);
+    margin-top:6px; opacity:.9;
+  }
+
+  /* ---------- Calendar card ---------- */
+  #calendar{
+    position:absolute; top:640px; left:100px; right:100px;
+    background:rgba(255,255,255,.045);
+    border:1.5px solid rgba(234,223,200,.16);
+    border-radius:30px; padding:34px 30px 30px;
+    box-shadow:0 30px 80px rgba(0,0,0,.35);
+    animation:riseIn .55s cubic-bezier(.2,1,.3,1) .18s both;
+  }
+  #cal-head{
+    display:grid; grid-template-columns:repeat(7,1fr); gap:10px;
+    margin-bottom:14px;
+  }
+  #cal-head span{
+    text-align:center; font-weight:700; font-size:30px; color:rgba(234,223,200,.55);
+  }
+  #cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:10px; }
+
+  .cell{ position:relative; height:100px; perspective:700px; }
+  .cell .inner{
+    position:absolute; inset:0; transform-style:preserve-3d;
+  }
+  .cell.will-flip .inner{ animation:flip .55s cubic-bezier(.45,.05,.35,1) var(--f) both; }
+  @keyframes flip{ from{ transform:rotateY(0); } to{ transform:rotateY(180deg); } }
+
+  .face{
+    position:absolute; inset:0; backface-visibility:hidden; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .front{
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(234,223,200,.15);
+  }
+  .front .num{
+    position:absolute; top:6px; right:11px;
+    font-weight:600; font-size:25px; color:rgba(234,223,200,.55);
+  }
+  .stamp{
+    opacity:0;
+    font-weight:800; font-size:29px; color:var(--terra);
+    border:2.5px solid var(--terra); border-radius:8px;
+    padding:0 9px; line-height:1.35;
+    background:rgba(222,106,90,.12);
+    transform:rotate(-4deg);
+  }
+  .has-stamp .stamp{ animation:stampIn .3s cubic-bezier(.3,1.4,.5,1) var(--d) both; }
+  @keyframes stampIn{
+    from{ opacity:0; transform:scale(2.1) rotate(9deg); }
+    65%{ opacity:1; transform:scale(.94) rotate(-5deg); }
+    to{ opacity:1; transform:scale(1) rotate(-4deg); }
+  }
+
+  .back{
+    transform:rotateY(180deg);
+    background:linear-gradient(160deg, var(--gold) 0%, var(--gold-deep) 100%);
+    border:1px solid rgba(255,255,255,.25);
+    flex-direction:column; gap:4px;
+  }
+  .back svg{ display:block; }
+  .price-tag{
+    font-weight:800; font-size:22px; line-height:1.2; color:var(--navy);
+    background:rgba(255,255,255,.85); border-radius:7px; padding:0 8px;
+  }
+
+  /* =========================================================
+     SCENE B — HOW (6–11s)  |  three service tiles
+     ========================================================= */
+  #sc-b{ opacity:0; animation:sceneB 5s linear 6s both; }
+  @keyframes sceneB{
+    0%{ opacity:0; transform:translateY(50px); }
+    9%{ opacity:1; transform:translateY(0); }
+    91%{ opacity:1; transform:translateY(0); }
+    100%{ opacity:0; transform:translateY(-40px); }
+  }
+  #sc-b .kicker{
+    position:absolute; top:330px; left:120px; right:120px;
+    text-align:center; font-weight:900; font-size:72px; color:var(--white);
+    animation:popIn .5s cubic-bezier(.2,1.2,.4,1) 6.25s both;
+  }
+  #sc-b .kicker::after{
+    content:''; display:block; width:180px; height:6px; border-radius:3px;
+    background:var(--gold); margin:26px auto 0;
+  }
+  #tiles{
+    position:absolute; top:520px; left:100px; right:100px;
+    display:flex; flex-direction:column; gap:44px;
+  }
+  .tile{
+    display:flex; align-items:center; gap:38px;
+    background:rgba(255,255,255,.05);
+    border:1.5px solid rgba(234,223,200,.16);
+    border-radius:28px; padding:38px 42px;
+    box-shadow:0 22px 60px rgba(0,0,0,.3);
+    animation:tileIn .6s cubic-bezier(.2,1,.3,1) var(--t) both;
+    min-height:250px;
+  }
+  .tile.gold{
+    border-color:rgba(224,168,62,.55);
+    background:linear-gradient(160deg, rgba(224,168,62,.14), rgba(224,168,62,.05));
+  }
+  @keyframes tileIn{
+    from{ opacity:0; transform:translateX(-90px); }
+    to{ opacity:1; transform:translateX(0); }
+  }
+  .tile .icon-wrap{
+    flex:0 0 168px; height:168px; border-radius:50%;
+    background:rgba(224,168,62,.13);
+    border:2px solid rgba(224,168,62,.5);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .tile .txt{ flex:1; }
+  .tile .txt h3{ font-weight:800; font-size:56px; line-height:1.35; color:var(--white); }
+  .tile .txt p{ font-weight:600; font-size:34px; line-height:1.45; color:rgba(234,223,200,.75); margin-top:6px; }
+
+  /* icon micro-animations (all CSS, capturable) */
+  .cam-flash{ opacity:0; transform-box:fill-box; transform-origin:center;
+    animation:flash 2.4s linear 7s infinite; }
+  @keyframes flash{
+    0%{ opacity:0; transform:scale(.4); }
+    4%{ opacity:.95; transform:scale(1.5); }
+    13%{ opacity:0; transform:scale(1.9); }
+    100%{ opacity:0; }
+  }
+  .key-group{ transform-box:fill-box; transform-origin:26% 50%;
+    animation:keyturn 2.6s ease-in-out 8.3s infinite; }
+  @keyframes keyturn{
+    0%{ transform:rotate(0); } 28%{ transform:rotate(-24deg); }
+    52%{ transform:rotate(6deg); } 70%{ transform:rotate(0); } 100%{ transform:rotate(0); }
+  }
+  .coin{ transform-box:fill-box; transform-origin:center;
+    animation:coindrop 2.2s cubic-bezier(.35,0,.4,1) 9.5s infinite; }
+  @keyframes coindrop{
+    0%{ transform:translateY(-40px); opacity:0; }
+    18%{ opacity:1; }
+    42%{ transform:translateY(0); }
+    56%{ transform:translateY(-9px); }
+    68%{ transform:translateY(0); }
+    100%{ transform:translateY(0); opacity:1; }
+  }
+
+  /* =========================================================
+     SCENE C — CTA (11–15s)
+     ========================================================= */
+  #sc-c{ opacity:0; animation:sceneCIn .5s ease-out 11s both; }
+  @keyframes sceneCIn{ from{ opacity:0; transform:translateY(46px); } to{ opacity:1; transform:translateY(0); } }
+
+  #cta-block{
+    position:absolute; top:430px; left:120px; right:120px;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+  }
+  #cta-kicker{
+    font-weight:700; font-size:44px; color:var(--sand); letter-spacing:1px;
+    animation:popIn .45s ease-out 11.25s both;
+  }
+  #cta-line{
+    margin-top:34px; font-weight:900; font-size:88px; line-height:1.25; color:var(--white);
+    animation:popIn .5s cubic-bezier(.2,1.2,.4,1) 11.45s both;
+  }
+  #cta-domain{
+    direction:ltr; margin-top:14px;
+    font-weight:900; font-size:118px; letter-spacing:-1px; color:var(--gold);
+    text-shadow:0 8px 50px rgba(224,168,62,.35);
+    animation:domainPop .6s cubic-bezier(.2,1.3,.4,1) 11.75s both;
+  }
+  @keyframes domainPop{
+    from{ opacity:0; transform:scale(.7); }
+    70%{ opacity:1; transform:scale(1.05); }
+    to{ opacity:1; transform:scale(1); }
+  }
+  #cta-terms{
+    margin-top:44px; font-weight:600; font-size:33px; line-height:1.5;
+    color:rgba(234,223,200,.8);
+    border:2px dashed rgba(234,223,200,.45); border-radius:16px;
+    padding:18px 36px;
+    animation:popIn .45s ease-out 12.15s both;
+  }
+  #cta-btn-wrap{ margin-top:58px; animation:popIn .5s cubic-bezier(.2,1.2,.4,1) 12.45s both; }
+  #cta-btn{
+    display:inline-block;
+    background:linear-gradient(160deg, var(--gold), var(--gold-deep));
+    color:var(--navy-deep);
+    font-weight:900; font-size:56px; line-height:1;
+    padding:40px 84px; border-radius:70px;
+    box-shadow:0 18px 60px rgba(224,168,62,.4);
+    animation:pulse 1.6s ease-in-out 13s infinite;
+  }
+  @keyframes pulse{
+    0%{ transform:scale(1);   box-shadow:0 18px 60px rgba(224,168,62,.40); }
+    50%{ transform:scale(1.045); box-shadow:0 22px 80px rgba(224,168,62,.60); }
+    100%{ transform:scale(1); box-shadow:0 18px 60px rgba(224,168,62,.40); }
+  }
+
+  /* calm waves + rising sun (decorative — allowed inside bottom margin) */
+  #sea{ position:absolute; left:0; right:0; bottom:0; height:460px; overflow:hidden; }
+  #sun{
+    position:absolute; bottom:130px; left:50%; margin-left:-130px;
+    width:260px; height:260px; border-radius:50%;
+    background:radial-gradient(circle at 38% 32%, #F0C169, var(--gold) 55%, var(--gold-deep));
+    box-shadow:0 0 120px rgba(224,168,62,.45);
+    animation:sunrise 3.2s cubic-bezier(.2,.7,.3,1) 11.15s both;
+  }
+  @keyframes sunrise{ from{ transform:translateY(240px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+  .wave{ position:absolute; bottom:0; left:0; width:2160px; height:280px; }
+  .wave-1{ opacity:1;  animation:drift 9s linear 11s infinite; }
+  .wave-2{ bottom:56px; opacity:.55; animation:drift2 13s linear 11s infinite; }
+  @keyframes drift{  from{ transform:translateX(0); } to{ transform:translateX(-1080px); } }
+  @keyframes drift2{ from{ transform:translateX(-1080px); } to{ transform:translateX(0); } }
+
+  /* ---------- shared entrances ---------- */
+  @keyframes popIn{
+    from{ opacity:0; transform:translateY(42px) scale(.96); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
+  @keyframes riseIn{
+    from{ opacity:0; transform:translateY(70px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeDown{
+    from{ opacity:0; transform:translateY(-24px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* ---------- QA helpers (never active during capture) ---------- */
+  #safe-guides{ display:none; position:absolute; inset:0; z-index:99; pointer-events:none; }
+  body.show-safe #safe-guides{ display:block; }
+  #safe-guides .bottom{ position:absolute; left:0; right:0; bottom:0; height:250px; background:rgba(255,0,0,.18); border-top:2px dashed red; }
+  #safe-guides .right{ position:absolute; top:0; bottom:0; right:0; width:120px; background:rgba(255,0,0,.18); border-left:2px dashed red; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- persistent brand wordmark -->
+  <div id="wordmark">
+    <svg width="58" height="58" viewBox="0 0 64 64" fill="none">
+      <circle cx="32" cy="24" r="13" fill="#E0A83E"/>
+      <path d="M6 40c6-5 14-5 20 0s14 5 20 0 12-4 12-4" stroke="#F8F4EB" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+      <path d="M6 52c6-5 14-5 20 0s14 5 20 0 12-4 12-4" stroke="#E0A83E" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+    </svg>
+    <span class="wm-text">WILD DIXIE</span>
+  </div>
+
+  <!-- ============ SCENE A: HOOK + FLIP (0–6s) ============ -->
+  <section class="scene" id="sc-a">
+    <div class="headline-slot">
+      <h1 id="hook"><span>شاليهك في السخنة</span><br><span class="accent">فاضي</span> طول السنة؟</h1>
+      <h1 id="fliptext">خلّيه يشتغل لحسابك<small>كل ليلة فاضية فرصة بتضيع</small></h1>
+    </div>
+
+    <div id="calendar">
+      <div id="cal-head">
+        <span>س</span><span>ح</span><span>ن</span><span>ث</span><span>ر</span><span>خ</span><span>ج</span>
+      </div>
+      <div id="cal-grid"></div>
+    </div>
+  </section>
+
+  <!-- ============ SCENE B: HOW (6–11s) ============ -->
+  <section class="scene" id="sc-b">
+    <h2 class="kicker">إزاي بنشتغل؟</h2>
+    <div id="tiles">
+
+      <div class="tile" style="--t:6.5s">
+        <div class="icon-wrap">
+          <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+            <rect x="10" y="28" width="76" height="52" rx="10" stroke="#E0A83E" stroke-width="5"/>
+            <path d="M34 28l6-10h16l6 10" stroke="#E0A83E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="48" cy="54" r="16" stroke="#F8F4EB" stroke-width="5"/>
+            <circle cx="74" cy="40" r="4" fill="#E0A83E"/>
+            <circle class="cam-flash" cx="48" cy="54" r="10" fill="#F8F4EB"/>
+          </svg>
+        </div>
+        <div class="txt">
+          <h3>إحنا بنصوّر ونسوّق</h3>
+          <p>تصوير احترافي وإعلانات مدروسة</p>
+        </div>
+      </div>
+
+      <div class="tile" style="--t:7.7s">
+        <div class="icon-wrap">
+          <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+            <g class="key-group">
+              <circle cx="30" cy="48" r="15" stroke="#E0A83E" stroke-width="5"/>
+              <path d="M44 48h38M70 48v12M82 48v9" stroke="#F8F4EB" stroke-width="5" stroke-linecap="round"/>
+            </g>
+          </svg>
+        </div>
+        <div class="txt">
+          <h3>بنستقبل الضيوف ونتابع النظافة</h3>
+          <p>استقبال وتسليم ونظافة بعد كل إقامة</p>
+        </div>
+      </div>
+
+      <div class="tile gold" style="--t:8.9s">
+        <div class="icon-wrap">
+          <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+            <circle class="coin" cx="66" cy="18" r="10" stroke="#E0A83E" stroke-width="5" fill="#0C2A3E"/>
+            <path d="M12 38a8 8 0 018-8h50a8 8 0 018 8v34a8 8 0 01-8 8H20a8 8 0 01-8-8V38z" stroke="#F8F4EB" stroke-width="5"/>
+            <path d="M78 50H62a7 7 0 000 14h16" stroke="#E0A83E" stroke-width="5"/>
+            <circle cx="64" cy="57" r="3.5" fill="#E0A83E"/>
+          </svg>
+        </div>
+        <div class="txt">
+          <h3>وأنت بتستلم أرباحك</h3>
+          <p>كشف واضح بكل حجز وكل جنيه</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ SCENE C: CTA (11–15s) ============ -->
+  <section class="scene" id="sc-c">
+    <div id="cta-block">
+      <div id="cta-kicker">إدارة كاملة لشاليهك — من غير مجهود منك</div>
+      <div id="cta-line">سجّل شاليهك على</div>
+      <div id="cta-domain">wilddixie.com</div>
+      <div id="cta-terms">[PLACEHOLDER: سطر العمولة / شروط التعاقد]</div>
+      <div id="cta-btn-wrap"><span id="cta-btn">سجّل شاليهك الآن</span></div>
+    </div>
+
+    <div id="sea">
+      <div id="sun"></div>
+      <svg class="wave wave-2" viewBox="0 0 2160 280" preserveAspectRatio="none">
+        <path d="M0 110 Q135 30 270 110 T540 110 T810 110 T1080 110 T1350 110 T1620 110 T1890 110 T2160 110 V280 H0 Z" fill="#12405C"/>
+      </svg>
+      <svg class="wave wave-1" viewBox="0 0 2160 280" preserveAspectRatio="none">
+        <path d="M0 120 Q135 40 270 120 T540 120 T810 120 T1080 120 T1350 120 T1620 120 T1890 120 T2160 120 V280 H0 Z" fill="#0C2A3E" stroke="#E0A83E" stroke-width="5"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- QA overlay: open ad.html?safe to visualize TikTok safe zones -->
+  <div id="safe-guides"><div class="bottom"></div><div class="right"></div></div>
+</div>
+
+<script>
+  /* Build the 30-day calendar.
+     Timing is deterministic (fixed arrays, no Math.random) so every capture
+     run produces identical frames. */
+  (function () {
+    const grid = document.getElementById('cal-grid');
+    const AR = '٠١٢٣٤٥٦٧٨٩';
+    const arNum = n => String(n).replace(/\d/g, d => AR[d]);
+
+    // a few unmarked days so the board reads "empty most of the year", not "always"
+    const skipStamp = new Set([4, 11, 19, 26]);
+
+    let stampRank = 0;
+    for (let i = 0; i < 30; i++) {
+      const stamped = !skipStamp.has(i);
+      const stampDelay = (0.5 + stampRank * 0.048).toFixed(3);   // 0.5s → ~1.75s
+      const flipDelay  = (2.5 + i * 0.062).toFixed(3);           // 2.5s → ~4.85s (with .55s flip)
+      if (stamped) stampRank++;
+
+      const cell = document.createElement('div');
+      cell.className = 'cell will-flip' + (stamped ? ' has-stamp' : '');
+      cell.style.setProperty('--d', stampDelay + 's');
+      cell.style.setProperty('--f', flipDelay + 's');
+      cell.innerHTML =
+        '<div class="inner">' +
+          '<div class="face front"><span class="num">' + arNum(i + 1) + '</span>' +
+            (stamped ? '<span class="stamp">فاضي</span>' : '') +
+          '</div>' +
+          '<div class="face back">' +
+            '<svg width="30" height="30" viewBox="0 0 30 30" fill="none">' +
+              '<path d="M5 16l7 7 13-15" stroke="#0C2A3E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '</svg>' +
+            '<span class="price-tag">ــــ ج.م</span>' +  /* placeholder dashes — never invent a price */
+          '</div>' +
+        '</div>';
+      grid.appendChild(cell);
+    }
+
+    if (location.search.includes('safe')) document.body.classList.add('show-safe');
+  })();
+</script>
+</body>
+</html>
