@@ -7,6 +7,8 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "a0.muscache.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "wilddixie.com" },
+      { protocol: "https", hostname: "www.wilddixie.com" },
     ],
   },
   // Same-origin proxy so the phone (or a tunnel) never needs to reach the

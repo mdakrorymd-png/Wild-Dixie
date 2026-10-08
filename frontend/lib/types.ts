@@ -116,6 +116,7 @@ export interface PropertyListItem {
   bedrooms: number;
   status: PropertyStatus;
   listing_type: ListingType;
+  cover_image_url: string | null;
 }
 
 export interface PriceRule {

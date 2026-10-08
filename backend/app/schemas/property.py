@@ -138,6 +138,7 @@ class PropertyListItem(BaseModel):
     bedrooms: int
     status: PropertyStatus
     listing_type: ListingType = ListingType.SELF_LIST
+    cover_image_url: str | None = None
 
 
 class RejectRequest(BaseModel):

@@ -22,7 +22,8 @@ export function Footer() {
             <li><Link href="/#estimator" className="hover:text-gold">احسب دخلك</Link></li>
             <li><Link href="/#how" className="hover:text-gold">إزاي بنشتغل</Link></li>
             <li><Link href="/#services" className="hover:text-gold">الخدمات</Link></li>
-            <li><Link href="/host/new" className="hover:text-gold">سجّل وحدتك</Link></li>
+            <li><Link href="/#pricing" className="hover:text-gold">الأسعار</Link></li>
+            <li><Link href="/partners" className="hover:text-gold">شراكة الكمبوندات</Link></li>
           </ul>
         </div>
 
@@ -30,22 +31,26 @@ export function Footer() {
           <h4 className="mb-3 font-bold text-white">للضيوف</h4>
           <ul className="space-y-2 text-sm">
             <li><Link href="/sokhna" className="hover:text-gold">احجز في السخنة</Link></li>
+            <li><Link href="/sokhna/beachfront-first-row" className="hover:text-gold">Beachfront First Row</Link></li>
             <li><span className="text-white/45">الدفع: إنستاباي / فودافون كاش</span></li>
-            <li><span className="text-white/45">المرافق على الضيف</span></li>
           </ul>
         </div>
 
         <div>
           <h4 className="mb-3 font-bold text-white">تواصل</h4>
           <ul className="space-y-2 text-sm">
-            <li><a href="https://wa.me/201033388003" target="_blank" rel="noopener noreferrer" className="hover:text-gold">واتساب</a></li>
+            <li><a href="https://wa.me/201033388003" target="_blank" rel="noopener noreferrer" className="hover:text-gold">واتساب · +20 103 338 8003</a></li>
             <li><span className="text-white/45">العين السخنة، مصر</span></li>
             <li><span className="text-white/45">مناطق قادمة: الساحل · الجونة</span></li>
           </ul>
         </div>
       </div>
-      <div className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/40">
-        © Wild Dixie Escapes 2026 · الشروط · الخصوصية
+      <div className="flex flex-col items-center gap-1.5 border-t border-white/10 px-4 py-4 text-center text-xs text-white/40 sm:flex-row sm:justify-between">
+        <span>© Wild Dixie Escapes 2026</span>
+        <span className="flex gap-4">
+          <Link href="/terms" className="hover:text-gold">الشروط</Link>
+          <Link href="/privacy" className="hover:text-gold">الخصوصية</Link>
+        </span>
       </div>
     </footer>
   );

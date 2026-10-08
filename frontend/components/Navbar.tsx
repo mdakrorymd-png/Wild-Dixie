@@ -3,16 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
+import { WHATSAPP_URL } from "@/lib/site";
+import { useAuth } from "@/lib/auth";
 
 const TRANSPARENT_ROUTES = ["/", "/sokhna"];
 
 export function Navbar() {
-  const { user, logout, loading } = useAuth();
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const isAdmin = user?.roles.includes("admin");
+  const isHost = user?.roles.includes("host");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -21,10 +24,6 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const isHost = user?.roles.includes("host");
-  const isAdmin = user?.roles.includes("admin");
-  const listHref = !user ? "/register" : isHost ? "/host" : "/profile";
-  // Transparent (white text) only over a dark hero, at the top, menu closed.
   const overHero = TRANSPARENT_ROUTES.includes(pathname) && !scrolled && !open;
 
   const shell = overHero
@@ -40,33 +39,26 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-1 text-base md:flex">
-          <NavLink href="/sokhna" label="احجز شاليه" active={pathname === "/sokhna"} light={overHero} />
-          <NavLink href="/#list" label="اعرض وحدتك" light={overHero} />
-          <NavLink href="/#manage" label="الإدارة الكاملة" light={overHero} />
+          <NavLink href="/" label="الرئيسية للمُلّاك" active={pathname === "/"} light={overHero} />
+          <NavLink href="/sokhna" label="احجز شاليه" active={pathname.startsWith("/sokhna")} light={overHero} />
           <NavLink href="/#pricing" label="الأسعار" light={overHero} />
-          {isHost && <NavLink href="/owners/dashboard" label="لوحة المالك" light={overHero} />}
-          {isHost && <NavLink href="/host" label="عقاراتي" light={overHero} />}
+          <NavLink href="/#faq" label="أسئلة" light={overHero} />
+          {/* Staff-only links — hidden from guests, visible when logged in with the role. */}
           {isAdmin && <NavLink href="/admin" label="الإدارة" light={overHero} />}
-          {!loading && user ? (
-            <>
-              <NavLink href="/bookings" label="حجوزاتي" light={overHero} />
-              <Link href="/profile" className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 transition ${overHero ? "border-white/30 text-white" : "border-brand/10 text-brand hover:border-brand/25"}`}>
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gold text-xs font-bold text-brand-dark">
-                  {user.full_name.trim().charAt(0)}
-                </span>
-                <span className="max-w-[80px] truncate">{user.full_name.split(" ")[0]}</span>
-              </Link>
-              <button onClick={logout} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition ${overHero ? "text-white/70 hover:text-white" : "text-black/50 hover:bg-black/5 hover:text-black/80"}`}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path d="M15 12H3m0 0 4-4m-4 4 4 4M21 4v16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                خروج
-              </button>
-            </>
+          {isHost && <NavLink href="/host" label="عقاراتي" light={overHero} />}
+          {user ? (
+            <button onClick={logout} className={`rounded-full px-3 py-2 text-sm transition ${overHero ? "text-white/70 hover:text-white" : "text-black/45 hover:text-black/80"}`}>
+              خروج
+            </button>
           ) : (
-            <NavLink href="/login" label="دخول" light={overHero} />
+            <>
+              <NavLink href="/login" label="دخول" light={overHero} />
+              <NavLink href="/register" label="أنشئ حساب" light={overHero} />
+            </>
           )}
-          <Link href={listHref} className="btn-primary mr-1 text-base">اعرض وحدتك</Link>
+          <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn-primary mr-1 text-base">
+            واتساب
+          </a>
         </nav>
 
         <button onClick={() => setOpen((v) => !v)} aria-label="القائمة" className={`rounded-lg p-2 md:hidden ${text}`}>
@@ -79,28 +71,23 @@ export function Navbar() {
       {open && (
         <nav className="border-t border-brand/10 bg-white px-4 py-3 text-sm md:hidden">
           <div className="flex flex-col gap-1">
+            <MobileLink href="/" label="الرئيسية للمُلّاك" onClick={() => setOpen(false)} />
             <MobileLink href="/sokhna" label="احجز شاليه" onClick={() => setOpen(false)} />
-            <MobileLink href="/#list" label="اعرض وحدتك" onClick={() => setOpen(false)} />
-            <MobileLink href="/#manage" label="الإدارة الكاملة" onClick={() => setOpen(false)} />
             <MobileLink href="/#pricing" label="الأسعار" onClick={() => setOpen(false)} />
+            <MobileLink href="/#faq" label="أسئلة" onClick={() => setOpen(false)} />
+            {isAdmin && <MobileLink href="/admin" label="الإدارة" onClick={() => setOpen(false)} />}
+            {isHost && <MobileLink href="/host" label="عقاراتي" onClick={() => setOpen(false)} />}
             {user ? (
-              <>
-                <MobileLink href="/bookings" label="حجوزاتي" onClick={() => setOpen(false)} />
-                {isHost && <MobileLink href="/owners/dashboard" label="لوحة المالك" onClick={() => setOpen(false)} />}
-                {isHost && <MobileLink href="/host" label="عقاراتي" onClick={() => setOpen(false)} />}
-                {isAdmin && <MobileLink href="/admin" label="الإدارة" onClick={() => setOpen(false)} />}
-                <MobileLink href="/profile" label="حسابي" onClick={() => setOpen(false)} />
-                <button
-                  onClick={() => { setOpen(false); logout(); }}
-                  className="rounded-lg px-3 py-2.5 text-right text-sm text-red-600/80 transition hover:bg-red-50"
-                >
-                  خروج من الحساب
-                </button>
-              </>
+              <button onClick={() => { setOpen(false); logout(); }} className="rounded-lg px-3 py-2.5 text-right text-red-600/80 transition hover:bg-red-50">
+                خروج من الحساب
+              </button>
             ) : (
-              <MobileLink href="/login" label="دخول" onClick={() => setOpen(false)} />
+              <>
+                <MobileLink href="/login" label="دخول" onClick={() => setOpen(false)} />
+                <MobileLink href="/register" label="أنشئ حساب" onClick={() => setOpen(false)} />
+              </>
             )}
-            <Link href={listHref} onClick={() => setOpen(false)} className="btn-primary mt-2">اعرض وحدتك</Link>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn-primary mt-2">واتساب</a>
           </div>
         </nav>
       )}

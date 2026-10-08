@@ -4,17 +4,21 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import status as http_status
+from pydantic import BaseModel
 
 from app.api.deps import DbSession, require_role
+from app.core.config import settings
 from app.models.enums import DisputeStatus, PayoutStatus, UserRole
 from app.models.user import User
 from app.schemas.common import Page
 from app.schemas.finance import DisputeRead, DisputeResolve, PayoutRead
 from app.schemas.payment import PaymentRead, RejectPaymentRequest
 from sqlalchemy import delete, not_
+from sqlalchemy import text as sa_text
 
-from app.schemas.property import PropertyRead, RejectRequest
+from app.schemas.property import PropertyImageIn, PropertyRead, RejectRequest
 from app.services import finance_service, payment_service, property_service
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -23,11 +27,35 @@ AdminUser = Annotated[User, Depends(require_role(UserRole.ADMIN))]
 
 
 # --------------------------------------------------------------------------- #
+# One-time admin bootstrap (disabled unless ADMIN_BOOTSTRAP_SECRET is set)
+# --------------------------------------------------------------------------- #
+class BootstrapAdminRequest(BaseModel):
+    phone_number: str
+    secret: str
+
+
+@router.post("/bootstrap-admin", summary="One-time: promote a user to admin (requires secret)")
+async def bootstrap_admin(payload: BootstrapAdminRequest, db: DbSession) -> dict:
+    if not settings.ADMIN_BOOTSTRAP_SECRET or payload.secret != settings.ADMIN_BOOTSTRAP_SECRET:
+        raise HTTPException(http_status.HTTP_403_FORBIDDEN, "Invalid or disabled bootstrap secret")
+    result = await db.execute(
+        sa_text(
+            "UPDATE users SET roles = array_append(roles, 'admin') "
+            "WHERE phone_number = :phone AND NOT ('admin' = ANY(roles)) "
+            "RETURNING id"
+        ),
+        {"phone": payload.phone_number},
+    )
+    row = result.fetchone()
+    await db.commit()
+    return {"promoted": row is not None}
+
+
+# --------------------------------------------------------------------------- #
 # User management
 # --------------------------------------------------------------------------- #
 @router.delete("/users/non-admin", summary="Delete all non-admin users (dev/reset)")
 async def delete_non_admin_users(_admin: AdminUser, db: DbSession) -> dict:
-    from sqlalchemy import text as sa_text
     result = await db.execute(
         delete(User).where(sa_text("NOT 'admin' = ANY(roles)")).returning(User.id)
     )
@@ -61,6 +89,22 @@ async def reject_property(
     property_id: uuid.UUID, payload: RejectRequest, _admin: AdminUser, db: DbSession
 ) -> PropertyRead:
     prop = await property_service.reject_property(db, property_id, payload.reason)
+    return PropertyRead.model_validate(prop)
+
+
+class AdminSetImagesRequest(BaseModel):
+    images: list[PropertyImageIn]
+
+
+@router.put("/properties/{property_id}/images", response_model=PropertyRead)
+async def admin_set_property_images(
+    property_id: uuid.UUID, payload: AdminSetImagesRequest, _admin: AdminUser, db: DbSession
+) -> PropertyRead:
+    """Replace a listing's photos regardless of status (published listings can't
+    be self-edited by the host — this lets moderation fix bad photos directly)."""
+    prop = await property_service.get_property(db, property_id)
+    prop.images = property_service._build_images(payload.images)
+    await db.flush()
     return PropertyRead.model_validate(prop)
 
 

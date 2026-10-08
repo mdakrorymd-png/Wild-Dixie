@@ -1,145 +1,207 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import type { ListingType, PropertyListItem } from "@/lib/types";
+import type { PropertyListItem } from "@/lib/types";
 import { PropertyCard } from "@/components/PropertyCard";
+import { whatsappWith, AIRBNB_LISTING_URL } from "@/lib/site";
 
-const HERO = "https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1600&q=80";
-const SOON = ["الساحل الشمالي", "الجونة", "مرسى مطروح", "جنوب سيناء"];
+/* TODO: replace with real photo once a wide beach shot is supplied */
+const HERO = "/listings/beachfront/01.jpg";
 
-type ListingFilter = "all" | ListingType;
+const BOOK_STEPS = [
+  { n: "١", t: "اختار شاليهك", d: "تفرّج على الوحدات المتاحة، أو كلمنا واتساب لو محتار." },
+  { n: "٢", t: "احجز وادفع عربون", d: "حدّد تواريخك وادفع العربون عبر إنستاباي أو المحفظة — بالجنيه وآمن." },
+  { n: "٣", t: "استمتع بإجازتك", d: "تواصل مباشر معانا على واتساب، وتصريح البوابة جاهز قبل وصولك." },
+];
+
+const COMPARE = [
+  { label: "رسوم خدمة إضافية على الضيف", us: "صفر — السعر واضح ومباشر", them: "١٥–٢٠٪ بتتضاف على السعر" },
+  { label: "تواصل", us: "واتساب مباشر وفوري", them: "عبر المنصة فقط — ممنوع الاتصال" },
+  { label: "طريقة الدفع", us: "إنستاباي / محفظة / بالجنيه", them: "كارت دولاري أو تحويل دولي" },
+  { label: "معرفة بالسخنة", us: "فريق محلي يعرف كل كمبوند", them: "دعم عام بالإنجليزي" },
+  { label: "تصريح البوابة والكمبوند", us: "بنجيبه لك قبل الوصول", them: "انت مسؤول تتواصل مع المالك" },
+];
+
+const GUEST_FAQ: [string, string][] = [
+  ["إزاي أحجز؟", "اختار الوحدة، حدّد تواريخك، وادفع العربون عبر إنستاباي أو المحفظة الإلكترونية — أو احجز مباشرة عبر واتساب."],
+  ["ليه أحجز مباشر مش من Airbnb؟", "نفس الوحدة — من غير رسوم الخدمة الزيادة، وتواصل واتساب مباشر، ودفع محلي بالجنيه."],
+  ["الدفع بيتم إزاي؟", "العربون عبر إنستاباي / فودافون كاش / أورنج كاش — بالجنيه وموثّق."],
+  ["سياسة الإلغاء إيه؟", "الإلغاء قبل ٧ أيام من الوصول بيرجّعلك المدفوع. الإلغاء خلال الـ٧ أيام بيخصم حسب سياسة الوحدة."],
+  ["تصريح البوابة بيتعمل إزاي؟", "بنطلب رقمك القومي ولوحة عربيتك قبل الوصول وبنجهّز التصريح — بتدخل الكمبوند من غير أي تعقيد."],
+];
+
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale");
+    const obs = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in-view"); obs.unobserve(e.target); } }),
+      { threshold: 0.12 }
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+}
 
 export default function SokhnaPage() {
   const [items, setItems] = useState<PropertyListItem[]>([]);
-  const [q, setQ] = useState("");
-  const [listingFilter, setListingFilter] = useState<ListingFilter>("all");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [reload, setReload] = useState(0);
-  const [wlArea, setWlArea] = useState(SOON[0]);
-  const [wlPhone, setWlPhone] = useState("");
-  const [wlSent, setWlSent] = useState(false);
+  useReveal();
 
   useEffect(() => {
-    setLoading(true);
-    const t = setTimeout(() => {
-      api
-        .searchProperties({
-          area: "Ain Sokhna",
-          q: q || undefined,
-          listing_type: listingFilter !== "all" ? listingFilter : undefined,
-          limit: 24,
-        })
-        .then((p) => {
-          setItems(p.items);
-          setError(false);
-        })
-        .catch(() => setError(true))
-        .finally(() => setLoading(false));
-    }, 200);
-    return () => clearTimeout(t);
-  }, [q, listingFilter, reload]);
-
-  async function joinWaitlist(e: React.FormEvent) {
-    e.preventDefault();
-    await api.createLead({ kind: "waitlist", area: wlArea, whatsapp: wlPhone });
-    setWlSent(true);
-  }
+    api
+      .searchProperties({ area: "Ain Sokhna", limit: 24 })
+      .then((p) => setItems(p.items))
+      .catch(() => undefined)
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div>
-      <section className="full-bleed relative mb-10 h-[420px] overflow-hidden sm:h-[460px]">
-        <Image src={HERO} alt="شاطئ العين السخنة" fill priority className="object-cover" />
-        <div className="hero-overlay absolute inset-0" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-16 text-center text-white">
-          <span className="mb-2 rounded-full bg-gold px-3 py-1 text-xs font-bold text-brand-dark">العين السخنة — متاح الآن</span>
-          <h1 className="text-3xl font-bold drop-shadow sm:text-4xl">شاليهات مُدارة باحتراف في العين السخنة</h1>
-          <p className="mt-1 text-sm text-white/85">صور حقيقية · تصاريح بوابة مظبوطة · دعم واتساب فوري</p>
-          <div className="mt-5 flex w-full max-w-lg items-center gap-2 rounded-2xl bg-white p-2 shadow-2xl">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-light text-brand">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
-                <path d="m20 20-3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </span>
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ابحث: أزها، تلال، بورتو..." className="w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50" />
-          </div>
+      {/* ═══ HERO — guests ═══ */}
+      <section className="full-bleed relative mb-12 flex h-[440px] items-center justify-center overflow-hidden sm:h-[500px]">
+        <Image src={HERO} alt="شاطئ إمباير ريزورت — العين السخنة" fill priority sizes="100vw" className="object-cover" />
+        <div className="hero-overlay-cinema absolute inset-0" />
+        <div className="relative z-10 flex flex-col items-center px-4 pt-16 text-center text-white">
+          <span className="mb-3 rounded-full bg-gold px-3 py-1 text-xs font-bold text-brand-dark">العين السخنة — متاح الآن</span>
+          <h1 className="max-w-2xl text-3xl font-bold drop-shadow sm:text-5xl">احجز شاليهك مباشرة — بدون رسوم زيادة</h1>
+          <p className="mt-3 text-sm text-white/85 sm:text-base">تصاريح بوابة مظبوطة · دفع بالجنيه · دعم واتساب فوري</p>
+          <a
+            href={whatsappWith("عايز أحجز شاليه في العين السخنة")}
+            target="_blank" rel="noopener noreferrer"
+            className="btn-primary mt-6 px-8 py-3"
+          >
+            احجز عبر واتساب
+          </a>
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-1">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-bold">شاليهات العين السخنة</h2>
-          <div className="flex items-center gap-2">
-            <div className="flex overflow-hidden rounded-xl border border-brand/15 bg-white text-sm">
-              {(["all", "self_list", "managed"] as const).map((v) => {
-                const label = v === "all" ? "الكل" : v === "self_list" ? "اعرض بنفسك" : "مُدارة بالكامل";
-                return (
-                  <button
-                    key={v}
-                    onClick={() => setListingFilter(v)}
-                    className={`px-3 py-1.5 transition ${
-                      listingFilter === v
-                        ? "bg-brand text-white font-medium"
-                        : "text-black/60 hover:bg-brand/5"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
+      <div className="mx-auto max-w-6xl px-4">
+
+        {/* ═══ LISTINGS — never an empty grid ═══ */}
+        <section className="pb-16">
+          <div className="reveal mb-6 flex items-end justify-between">
+            <h2 className="text-2xl font-bold sm:text-3xl">الوحدات المتاحة</h2>
+            {items.length > 0 && <span className="text-sm text-black/45">{items.length} وحدة</span>}
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {[0, 1, 2].map((i) => <div key={i} className="h-72 animate-pulse rounded-2xl bg-black/5" />)}
             </div>
-            <span className="text-sm text-black/45">{items.length} عقار</span>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {[0, 1, 2].map((i) => <div key={i} className="h-72 animate-pulse rounded-2xl bg-black/5" />)}
-          </div>
-        ) : error ? (
-          <div className="py-12 text-center">
-            <p className="text-black/55">تعذّر تحميل العقارات دلوقتي. ممكن يكون السيرفر بيصحى — جرّب تاني بعد لحظات.</p>
-            <button onClick={() => setReload((n) => n + 1)} className="btn-outline mt-4">إعادة المحاولة</button>
-          </div>
-        ) : items.length === 0 ? (
-          <p className="py-12 text-center text-black/50">لا توجد عقارات مطابقة.</p>
-        ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((p) => <PropertyCard key={p.id} p={p} />)}
-          </div>
-        )}
-
-        {/* Coming soon + waitlist */}
-        <div className="mt-10 rounded-3xl bg-brand p-6 text-white sm:p-8">
-          <div className="grid gap-5 lg:grid-cols-2 lg:items-center">
-            <div>
-              <h3 className="text-xl font-bold text-gold">مناطق قادمة قريبًا</h3>
-              <p className="mt-1 text-sm text-white/75">بنبدأ بالعين السخنة، وبعدها بنوسّع. سجّل واحنا نكلّمك أول ما نفتح منطقتك.</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {SOON.map((a) => (
-                  <span key={a} className="rounded-full border border-white/20 px-3 py-1 text-xs text-white/80">{a}</span>
-                ))}
+          ) : items.length > 0 ? (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {items.map((p) => <PropertyCard key={p.id} p={p} />)}
+            </div>
+          ) : (
+            /* Fallback: the real unit as a rich card — never a zero state. */
+            <div className="card overflow-hidden sm:flex">
+              <div className="relative h-64 sm:h-auto sm:w-1/2">
+                <Image src="/listings/beachfront/01.jpg" alt="Beachfront First Row — إمباير ريزورت" fill sizes="(max-width:640px) 100vw, 50vw" className="object-cover" />
+              </div>
+              <div className="flex flex-col justify-center p-7 sm:w-1/2">
+                <h3 className="text-2xl font-bold">Beachfront First Row — إمباير ريزورت</h3>
+                <p className="mt-2 text-sm leading-7 text-black/55">أول صف على البحر مباشرة · غرفتين · حتى ٦ ضيوف</p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Link href="/sokhna/beachfront-first-row" className="btn-navy px-6">التفاصيل والحجز</Link>
+                  <a href={whatsappWith("عايز أحجز Beachfront First Row في إمباير ريزورت")} target="_blank" rel="noopener noreferrer" className="btn-outline px-6">واتساب</a>
+                </div>
               </div>
             </div>
-            {wlSent ? (
-              <div className="rounded-2xl bg-white/10 p-5 text-center">
-                <p className="font-bold text-gold">تمام! ✓</p>
-                <p className="mt-1 text-sm text-white/80">هنكلّمك أول ما نفتح {wlArea}.</p>
-              </div>
-            ) : (
-              <form onSubmit={joinWaitlist} className="flex flex-col gap-2 sm:flex-row">
-                <select className="input text-brand" value={wlArea} onChange={(e) => setWlArea(e.target.value)}>
-                  {SOON.map((a) => <option key={a} value={a}>{a}</option>)}
-                </select>
-                <input className="input text-brand" placeholder="رقم الواتساب" value={wlPhone} onChange={(e) => setWlPhone(e.target.value)} required />
-                <button className="btn-primary whitespace-nowrap">انضم للقائمة</button>
-              </form>
-            )}
+          )}
+        </section>
+
+        {/* ═══ WHY DIRECT — comparison ═══ */}
+        <section className="pb-16">
+          <div className="reveal mb-10 text-center">
+            <span className="text-xs font-semibold tracking-widest text-gold-dark uppercase">مقارنة مباشرة</span>
+            <h2 className="mt-2 text-3xl font-bold sm:text-4xl">ليه تحجز مباشر؟</h2>
+            <p className="mt-2 text-sm text-black/50">نفس الوحدة — بأوفر وأوضح وأسرع من المنصات العالمية.</p>
           </div>
-        </div>
+          <div className="reveal overflow-hidden rounded-3xl border border-brand/10 shadow-[var(--shadow-soft)]">
+            <div className="grid grid-cols-[1.8fr_1fr_1fr] bg-brand text-white">
+              <div className="px-6 py-4 text-xs font-medium text-white/40">المعيار</div>
+              <div className="px-4 py-4 text-center text-sm font-bold text-gold">وايلد ديكسي ✓</div>
+              <div dir="ltr" className="px-4 py-4 text-center text-xs font-medium text-white/35">Airbnb / Booking</div>
+            </div>
+            {COMPARE.map((row, i) => (
+              <div key={row.label} className={`grid grid-cols-[1.8fr_1fr_1fr] gap-px text-sm ${i % 2 === 0 ? "bg-white" : "bg-brand/[0.025]"}`}>
+                <div className="px-6 py-4 font-medium text-black/70">{row.label}</div>
+                <div className="flex items-center justify-center gap-1.5 px-4 py-4 text-center font-medium text-brand">{row.us}</div>
+                <div className="flex items-center justify-center gap-1.5 px-4 py-4 text-center text-black/40">{row.them}</div>
+              </div>
+            ))}
+          </div>
+          {AIRBNB_LISTING_URL && (
+            <p className="reveal mt-4 text-center text-sm">
+              <a href={AIRBNB_LISTING_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand underline underline-offset-4">
+                شوف تقييماتنا الحقيقية على Airbnb ←
+              </a>
+            </p>
+          )}
+        </section>
+
+        {/* ═══ HOW TO BOOK ═══ */}
+        <section className="pb-16">
+          <div className="reveal mb-12 text-center">
+            <span className="text-xs font-semibold tracking-widest text-gold-dark uppercase">العملية</span>
+            <h2 className="mt-2 text-3xl font-bold sm:text-4xl">احجز في ٣ خطوات</h2>
+          </div>
+          <div className="relative grid gap-8 sm:grid-cols-3">
+            <div className="absolute top-9 right-[16.7%] left-[16.7%] hidden h-px bg-gradient-to-l from-gold/40 via-gold/20 to-gold/40 sm:block" />
+            {BOOK_STEPS.map((s, i) => (
+              <div key={s.n} className={`reveal d${i + 1} flex flex-col items-center text-center`}>
+                <div className="relative mb-5 grid h-[4.5rem] w-[4.5rem] place-items-center rounded-full bg-brand text-3xl font-bold text-gold shadow-[0_0_0_6px_rgba(11,46,60,0.1)] ring-1 ring-brand/20">
+                  {s.n}
+                </div>
+                <h3 className="text-lg font-bold">{s.t}</h3>
+                <p className="mt-2 text-sm leading-7 text-black/55">{s.d}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ═══ GUEST FAQ ═══ */}
+        <section className="pb-16">
+          <div className="reveal mb-8 text-center">
+            <span className="text-xs font-semibold tracking-widest text-gold-dark uppercase">أسئلة شائعة</span>
+            <h2 className="mt-2 text-3xl font-bold sm:text-4xl">عندك سؤال؟</h2>
+          </div>
+          <div className="mx-auto max-w-2xl space-y-2">
+            {GUEST_FAQ.map(([q, a]) => (
+              <details key={q} className="reveal card group overflow-hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-between px-6 py-4 font-medium transition-colors hover:text-brand">
+                  {q}
+                  <span className="text-gold-dark text-lg transition-transform duration-200 group-open:rotate-45">+</span>
+                </summary>
+                <p className="border-t border-brand/[0.06] px-6 py-4 text-sm leading-7 text-black/60">{a}</p>
+              </details>
+            ))}
+          </div>
+          <p className="reveal mt-6 text-center text-sm">
+            <Link href="/sokhna/guide" className="font-semibold text-brand underline underline-offset-4">
+              دليل العين السخنة والزعفرانة — الكمبوندات والأسعار وأفضل وقت ←
+            </Link>
+          </p>
+        </section>
+
+        {/* ═══ FINAL CTA ═══ */}
+        <section className="pb-16">
+          <div className="reveal rounded-3xl bg-brand px-8 py-12 text-center text-white">
+            <h2 className="text-2xl font-bold sm:text-3xl">إجازتك على بُعد رسالة واحدة</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-white/65">ابعتلنا التواريخ اللي عايزها — وهنرد عليك في دقايق.</p>
+            <a
+              href={whatsappWith("عايز أحجز شاليه في العين السخنة")}
+              target="_blank" rel="noopener noreferrer"
+              className="btn-primary mt-6 inline-flex px-8 py-3"
+            >
+              احجز عبر واتساب
+            </a>
+          </div>
+        </section>
+
       </div>
     </div>
   );

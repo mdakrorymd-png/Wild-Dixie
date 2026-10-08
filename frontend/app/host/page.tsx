@@ -14,6 +14,8 @@ export default function HostPage() {
   const [listings, setListings] = useState<Property[]>([]);
   const [payouts, setPayouts] = useState<{ total_pending: string; total_paid: string } | null>(null);
   const [url, setUrl] = useState("");
+  const [importMode, setImportMode] = useState<"url" | "html">("url");
+  const [html, setHtml] = useState("");
   const [imported, setImported] = useState<ImportedListing | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -61,6 +63,19 @@ export default function HostPage() {
     }
   }
 
+  async function runImportHtml() {
+    setBusy(true);
+    setError(null);
+    setImported(null);
+    try {
+      setImported(await api.importAirbnbHtml(html, url));
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "فشل الاستيراد");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -70,20 +85,65 @@ export default function HostPage() {
       </div>
 
       <div className="card border-brand/40 bg-brand-light/40 p-5">
-        <h2 className="font-medium">استورد قائمتك من Airbnb في ٢٠ ثانية</h2>
-        <p className="mt-1 text-sm text-black/50">الصق رابط الإعلان من Airbnb (مثال: https://www.airbnb.com/rooms/12345678)، وإحنا بنجيب الصور والوصف والمرافق تلقائيًا.</p>
-        <div className="mt-3 flex gap-2">
-          <input
-            className="input ltr:text-left"
-            dir="ltr"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://www.airbnb.com/rooms/..."
-          />
-          <button onClick={runImport} disabled={busy || !url.trim()} className="btn-primary whitespace-nowrap disabled:opacity-50">
-            {busy ? "…" : "استيراد"}
+        <h2 className="font-medium">استورد قائمتك من Airbnb</h2>
+
+        <div className="mt-3 flex gap-2 text-xs font-medium">
+          <button
+            onClick={() => setImportMode("url")}
+            className={`rounded-lg px-3 py-1.5 ${importMode === "url" ? "bg-brand text-white" : "bg-white text-black/60"}`}
+          >
+            رابط مباشر
+          </button>
+          <button
+            onClick={() => setImportMode("html")}
+            className={`rounded-lg px-3 py-1.5 ${importMode === "html" ? "bg-brand text-white" : "bg-white text-black/60"}`}
+          >
+            الصق كود الصفحة (أضمن)
           </button>
         </div>
+
+        {importMode === "url" ? (
+          <>
+            <p className="mt-2 text-sm text-black/50">الصق رابط الإعلان من Airbnb — ممكن يترفض أحيانًا لو Airbnb حجب طلب السيرفر. لو حصل كده استخدم "الصق كود الصفحة".</p>
+            <div className="mt-3 flex gap-2">
+              <input
+                className="input ltr:text-left"
+                dir="ltr"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://www.airbnb.com/rooms/..."
+              />
+              <button onClick={runImport} disabled={busy || !url.trim()} className="btn-primary whitespace-nowrap disabled:opacity-50">
+                {busy ? "…" : "استيراد"}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <ol className="mt-2 list-decimal space-y-1 pr-4 text-sm text-black/60">
+              <li>افتح إعلانك على Airbnb من متصفحك العادي (مسجّل دخول).</li>
+              <li>كليك يمين على الصفحة ← "عرض مصدر الصفحة" (View Page Source).</li>
+              <li>حدد الكل (Ctrl+A) وانسخ (Ctrl+C)، وألصقه هنا تحت.</li>
+            </ol>
+            <input
+              className="input ltr:text-left mt-3"
+              dir="ltr"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="رابط الإعلان (اختياري)"
+            />
+            <textarea
+              className="input mt-2 h-32 font-mono text-xs ltr:text-left"
+              dir="ltr"
+              value={html}
+              onChange={(e) => setHtml(e.target.value)}
+              placeholder="الصق كود الصفحة (HTML) هنا..."
+            />
+            <button onClick={runImportHtml} disabled={busy || html.trim().length < 200} className="btn-primary mt-2 whitespace-nowrap disabled:opacity-50">
+              {busy ? "…" : "استيراد من الكود الملصوق"}
+            </button>
+          </>
+        )}
         {error && <p className="mt-2 text-sm text-red-700">{error}</p>}
         {imported && (
           <div className="mt-4 rounded-lg bg-white p-4 text-sm">

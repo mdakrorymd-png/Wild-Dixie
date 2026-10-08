@@ -59,6 +59,17 @@ class Settings(BaseSettings):
     SMSMISR_PASSWORD: str = ""
     SMSMISR_SENDER: str = "Wild Dixie"
 
+    # WhatsApp Cloud API (SMS_PROVIDER=whatsapp) — free OTP via a dedicated number.
+    WHATSAPP_TOKEN: str = ""
+    WHATSAPP_PHONE_NUMBER_ID: str = ""
+    WHATSAPP_OTP_TEMPLATE: str = "otp_code"
+    WHATSAPP_OTP_LANG: str = "ar"
+    WHATSAPP_API_VERSION: str = "v21.0"
+
+    # One-time admin bootstrap (empty = disabled). Set temporarily to promote
+    # the first admin account, then unset.
+    ADMIN_BOOTSTRAP_SECRET: str = ""
+
     # ---- Airbnb scraper ----
     SCRAPER_MAX_ATTEMPTS: int = 3
     # Optional proxy to bypass IP-level blocks, e.g.

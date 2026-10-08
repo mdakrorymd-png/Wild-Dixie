@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, Query, status
 from app.api.deps import CurrentUser, DbSession, require_role
 from app.models.enums import ListingType, PropertyType, UserRole
 from app.models.user import User
-from app.schemas.airbnb import AirbnbImportRequest, ImportedListing
+from app.schemas.airbnb import AirbnbImportHtmlRequest, AirbnbImportRequest, ImportedListing
 from app.schemas.common import Page
 from app.schemas.property import (
     PropertyCreate,
@@ -18,7 +18,7 @@ from app.schemas.property import (
     PropertyRead,
     PropertyUpdate,
 )
-from app.services import airbnb_importer, property_service
+from app.services import airbnb_importer, airbnb_parser, property_service
 
 router = APIRouter(prefix="/properties", tags=["properties"])
 
@@ -99,6 +99,18 @@ async def import_from_airbnb(
     This does NOT create a listing — the host reviews & submits afterwards.
     """
     return await airbnb_importer.import_from_airbnb(payload.url)
+
+
+@router.post("/import-html", response_model=ImportedListing)
+async def import_from_airbnb_html(
+    payload: AirbnbImportHtmlRequest, _host: HostUser
+) -> ImportedListing:
+    """Parse Airbnb listing HTML pasted by the host (e.g. via 'View Page Source'
+    in their own logged-in browser tab). No outbound fetch is made here, so
+    Airbnb's anti-bot wall — which only blocks server-side requests — never
+    comes into play.
+    """
+    return airbnb_parser.parse_airbnb_html(payload.html, payload.source_url)
 
 
 @router.get("/{property_id}", response_model=PropertyRead)

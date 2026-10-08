@@ -46,10 +46,27 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const LOCAL_BUSINESS_LD = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: "Wild Dixie Escapes",
+  description: SITE_DESC,
+  url: SITE_URL,
+  telephone: "+201033388003",
+  areaServed: "Ain Sokhna, Egypt",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Ain Sokhna",
+    addressRegion: "Suez",
+    addressCountry: "EG",
+  },
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ar" dir="rtl" className={`${cairo.variable} ${messiri.variable}`}>
       <body className="font-sans antialiased">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(LOCAL_BUSINESS_LD) }} />
         <AuthProvider>
           <Navbar />
           <AppMain>{children}</AppMain>

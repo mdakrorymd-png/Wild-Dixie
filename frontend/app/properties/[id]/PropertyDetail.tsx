@@ -24,6 +24,7 @@ export function PropertyDetail({ id }: { id: string }) {
   const [priceQuote, setPriceQuote] = useState<PriceQuote | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     api.getProperty(id).then(setProp).catch((e) => setError(e.message));
@@ -61,20 +62,84 @@ export function PropertyDetail({ id }: { id: string }) {
 
   if (!prop) return <p className="py-12 text-center text-black/50">{error ?? "جارٍ التحميل…"}</p>;
   const canDeposit = prop.down_payment_percentage > 0;
-  const gallery = galleryImages(prop.id, prop.property_type);
+  const realImages = prop.images.map((img) => img.url);
+  const gallery = realImages.length > 0 ? realImages : galleryImages(prop.id, prop.property_type);
 
   return (
     <div>
-      <div className="mb-6 grid grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-2xl">
-        <div className="relative col-span-4 h-64 row-span-2 bg-brand-light sm:col-span-2 sm:h-[340px]">
+      <div className="relative mb-6 grid grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-2xl">
+        <button
+          type="button"
+          onClick={() => setLightboxIndex(0)}
+          className="relative col-span-4 h-64 row-span-2 bg-brand-light sm:col-span-2 sm:h-[340px]"
+        >
           <Image src={gallery[0]} alt={prop.title} fill priority sizes="50vw" className="object-cover" />
-        </div>
+        </button>
         {gallery.slice(1, 4).map((src, i) => (
-          <div key={i} className={`relative hidden bg-brand-light sm:block ${i === 0 ? "col-span-2" : ""}`}>
+          <button
+            type="button"
+            key={i}
+            onClick={() => setLightboxIndex(i + 1)}
+            className={`relative hidden bg-brand-light sm:block ${i === 0 ? "col-span-2" : ""}`}
+          >
             <Image src={src} alt="" fill sizes="25vw" className="object-cover" />
-          </div>
+          </button>
         ))}
+        {gallery.length > 1 && (
+          <button
+            type="button"
+            onClick={() => setLightboxIndex(0)}
+            className="absolute bottom-3 left-3 rounded-full bg-white/95 px-4 py-2 text-xs font-bold text-brand shadow-md hover:bg-white"
+          >
+            شوف كل الصور ({gallery.length})
+          </button>
+        )}
       </div>
+
+      {lightboxIndex !== null && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col bg-black/95"
+          onClick={() => setLightboxIndex(null)}
+        >
+          <div className="flex items-center justify-between p-4 text-white">
+            <span className="text-sm">{lightboxIndex + 1} / {gallery.length}</span>
+            <button type="button" onClick={() => setLightboxIndex(null)} className="text-2xl leading-none">×</button>
+          </div>
+          <div className="relative flex-1" onClick={(e) => e.stopPropagation()}>
+            <Image src={gallery[lightboxIndex]} alt="" fill sizes="100vw" className="object-contain" />
+            {lightboxIndex > 0 && (
+              <button
+                type="button"
+                onClick={() => setLightboxIndex((i) => (i ?? 0) - 1)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/20 p-3 text-white hover:bg-white/30"
+              >
+                ‹
+              </button>
+            )}
+            {lightboxIndex < gallery.length - 1 && (
+              <button
+                type="button"
+                onClick={() => setLightboxIndex((i) => (i ?? 0) + 1)}
+                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/20 p-3 text-white hover:bg-white/30"
+              >
+                ›
+              </button>
+            )}
+          </div>
+          <div className="flex gap-2 overflow-x-auto p-3" onClick={(e) => e.stopPropagation()}>
+            {gallery.map((src, i) => (
+              <button
+                type="button"
+                key={i}
+                onClick={() => setLightboxIndex(i)}
+                className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-lg ${i === lightboxIndex ? "ring-2 ring-gold" : "opacity-60"}`}
+              >
+                <Image src={src} alt="" fill sizes="64px" className="object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">

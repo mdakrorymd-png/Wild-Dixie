@@ -8,9 +8,15 @@
   --shadow-hover: 0 2px 4px rgba(11, 46, 60, 0.06), 0 18px 40px -16px rgba(11, 46, 60, 0.28);
 }
 
+html {
+  /* Guard against sub-pixel horizontal scroll from 100vw full-bleed sections. */
+  overflow-x: hidden;
+}
+
 body {
   background: theme("colors.sand");
   color: #10222a;
+  overflow-x: hidden;
 }
 
 /* Elegant display face for headings (the "qualco" editorial feel). */
@@ -84,3 +90,47 @@ input[type="url"] {
   to { opacity: 1; transform: translateY(0); }
 }
 .fade-up { animation: fade-up 0.5s ease both; }
+
+/* ── Scroll reveal ───────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(36px);
+  transition: opacity 0.75s cubic-bezier(0.16,1,0.3,1),
+              transform 0.75s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.in-view { opacity: 1; transform: translateY(0); }
+
+.reveal-left  { opacity:0; transform:translateX(-32px);
+  transition: opacity 0.75s cubic-bezier(0.16,1,0.3,1), transform 0.75s cubic-bezier(0.16,1,0.3,1); }
+.reveal-right { opacity:0; transform:translateX(32px);
+  transition: opacity 0.75s cubic-bezier(0.16,1,0.3,1), transform 0.75s cubic-bezier(0.16,1,0.3,1); }
+.reveal-left.in-view, .reveal-right.in-view { opacity:1; transform:translateX(0); }
+
+.reveal-scale { opacity:0; transform:scale(0.94);
+  transition: opacity 0.65s ease, transform 0.65s ease; }
+.reveal-scale.in-view { opacity:1; transform:scale(1); }
+
+.d1 { transition-delay:0.05s } .d2 { transition-delay:0.12s }
+.d3 { transition-delay:0.19s } .d4 { transition-delay:0.26s }
+.d5 { transition-delay:0.33s } .d6 { transition-delay:0.40s }
+
+/* ── Hero cinema overlay ─────────────────────────────────── */
+.hero-overlay-cinema {
+  background: linear-gradient(
+    to bottom,
+    rgba(7,25,35,0.35) 0%,
+    rgba(7,25,35,0.30) 40%,
+    rgba(7,25,35,0.75) 80%,
+    rgba(7,25,35,0.95) 100%
+  );
+}
+
+/* ── Number glow ─────────────────────────────────────────── */
+.num-glow {
+  text-shadow: 0 0 60px rgba(201,162,75,0.35);
+}
+
+@keyframes pulse-slow {
+  0%,100% { opacity:1; } 50% { opacity:0.6; }
+}
+.pulse-slow { animation: pulse-slow 3s ease-in-out infinite; }

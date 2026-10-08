@@ -111,6 +111,8 @@ export const api = {
   getProperty: (id: string) => request<Property>(`/properties/${id}`),
   importAirbnb: (url: string) =>
     request<ImportedListing>("/properties/import", { method: "POST", body: JSON.stringify({ url }) }),
+  importAirbnbHtml: (html: string, source_url: string) =>
+    request<ImportedListing>("/properties/import-html", { method: "POST", body: JSON.stringify({ html, source_url }) }),
   myProperties: () => request<Page<Property>>("/properties/mine"),
   createProperty: (body: Record<string, unknown>) =>
     request<Property>("/properties", { method: "POST", body: JSON.stringify(body) }),

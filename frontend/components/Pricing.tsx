@@ -57,8 +57,8 @@ export function Pricing() {
         <span className="text-sm font-semibold tracking-wide text-gold-dark">للإدارة الكاملة بس</span>
         <h2 className="mt-1 text-3xl font-bold sm:text-4xl">باكدجات الإدارة الكاملة</h2>
         <p className="mx-auto mt-2 max-w-xl text-sm text-black/55">
-          للي عايز يسيب التشغيل علينا بالكامل — من غير مقدّم وتجربة قابلة للإلغاء. مش عايز إدارة؟{" "}
-          <Link href="/#list" className="font-semibold text-gold-dark underline-offset-2 hover:underline">اعرض وحدتك مجانًا</Link>{" "}
+          للي عايز يسيب التشغيل علينا بالكامل — من غير مقدّم وتجربة قابلة للإلغاء. عايز تعرض بنفسك؟{" "}
+          <Link href="/#estimator" className="font-semibold text-gold-dark underline-offset-2 hover:underline">كلمنا</Link>{" "}
           وادفع عمولة ١٠٪ على الحجز بس.
         </p>
       </div>

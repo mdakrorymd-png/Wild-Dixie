@@ -26,6 +26,14 @@ class AirbnbImportRequest(BaseModel):
         return v
 
 
+class AirbnbImportHtmlRequest(BaseModel):
+    """Host pastes the page source of their own (already-logged-in) browser tab —
+    bypasses Airbnb's anti-bot wall entirely since no server-side fetch happens."""
+
+    html: str = Field(..., min_length=200, max_length=3_000_000)
+    source_url: str = Field("", max_length=500)
+
+
 class ImportedListing(BaseModel):
     """Best-effort structured data scraped from an Airbnb listing page."""
 

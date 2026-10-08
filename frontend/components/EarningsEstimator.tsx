@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { getAttribution } from "@/lib/attribution";
+import { whatsappWith } from "@/lib/site";
 
 const COMPOUNDS = ["Azha", "La Vista", "Malibu", "Porto Sokhna", "Telal Sokhna", "Stella Di Mare", "أخرى"];
 const BASE_ADR: Record<number, number> = { 1: 3000, 2: 4500, 3: 6500, 4: 9000 };
@@ -39,6 +40,7 @@ export function EarningsEstimator() {
     e.preventDefault();
     setBusy(true);
     try {
+      // Store the lead first (survives even if the WhatsApp tab is blocked).
       await api.createLead({
         kind: "owner_estimate",
         full_name: name || undefined,
@@ -52,6 +54,18 @@ export function EarningsEstimator() {
         estimated_net: Math.round(est.net),
         source: JSON.stringify(getAttribution()),
       });
+      // Then hand off to WhatsApp with the estimate prefilled.
+      const seasonLabel = SEASON.find((s) => s.id === season)?.label ?? season;
+      const msg =
+        `مرحبًا وايلد ديكسي 👋\n` +
+        `عايز أعرض وحدتي للإدارة:\n` +
+        `• الكمبوند: ${compound}\n` +
+        `• الغرف: ${bedrooms}\n` +
+        `• حمام سباحة: ${pool ? "نعم" : "لا"}\n` +
+        `• الموسم: ${seasonLabel}\n` +
+        `• التقدير المبدئي: ${fmt(est.grossLo)}–${fmt(est.grossHi)} ج.م/شهر` +
+        (name ? `\n• الاسم: ${name}` : "");
+      window.open(whatsappWith(msg), "_blank", "noopener,noreferrer");
       setSent(true);
     } finally {
       setBusy(false);

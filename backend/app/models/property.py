@@ -133,6 +133,14 @@ class Property(UUIDMixin, TimestampMixin, Base):
     resort: Mapped[Resort | None] = relationship(lazy="selectin")
 
     @property
+    def cover_image_url(self) -> str | None:
+        """The listing's cover photo — falls back to the first uploaded image."""
+        if not self.images:
+            return None
+        cover = next((img for img in self.images if img.is_cover), None)
+        return (cover or self.images[0]).url
+
+    @property
     def is_publicly_visible(self) -> bool:
         return self.status == PropertyStatus.PUBLISHED
 

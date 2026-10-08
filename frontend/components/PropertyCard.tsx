@@ -13,7 +13,7 @@ export function PropertyCard({ p }: { p: PropertyListItem }) {
     >
       <div className="relative h-48 overflow-hidden bg-brand-light">
         <Image
-          src={coverImage(p.id, p.property_type)}
+          src={p.cover_image_url ?? coverImage(p.id, p.property_type)}
           alt={p.title}
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
