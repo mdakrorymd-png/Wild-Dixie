@@ -6,8 +6,9 @@ import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { WHATSAPP_URL } from "@/lib/site";
 import { useAuth } from "@/lib/auth";
+import { isEnglishPath } from "@/lib/lang";
 
-const TRANSPARENT_ROUTES = ["/", "/sokhna"];
+const TRANSPARENT_ROUTES = ["/", "/sokhna", "/en"];
 
 export function Navbar() {
   const pathname = usePathname();
@@ -24,12 +25,52 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const en = isEnglishPath(pathname);
   const overHero = TRANSPARENT_ROUTES.includes(pathname) && !scrolled && !open;
 
   const shell = overHero
     ? "bg-transparent"
     : "bg-white/35 backdrop-blur-2xl border-b border-white/30 shadow-[0_6px_24px_-10px_rgba(11,46,60,0.25)] supports-[backdrop-filter]:bg-white/25";
   const text = overHero ? "text-white" : "text-brand";
+
+  if (en) {
+    return (
+      <header dir="ltr" className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${shell}`}>
+        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-5 py-5 sm:px-9 sm:py-[1.6rem]">
+          <Link href="/en">
+            <Logo light={overHero} />
+          </Link>
+          <nav className="hidden items-center gap-1 text-base md:flex">
+            <NavLink href="/en" label="For owners" active={pathname === "/en"} light={overHero} />
+            <NavLink href="/en#included" label="What's included" light={overHero} />
+            <NavLink href="/en#pricing" label="Pricing" light={overHero} />
+            <NavLink href="/en#faq" label="FAQ" light={overHero} />
+            <NavLink href="/" label="عربي" light={overHero} />
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn-primary ml-1 text-base">
+              WhatsApp
+            </a>
+          </nav>
+          <button onClick={() => setOpen((v) => !v)} aria-label="Menu" className={`rounded-lg p-2 md:hidden ${text}`}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+        {open && (
+          <nav className="border-t border-brand/10 bg-white px-4 py-3 text-sm md:hidden">
+            <div className="flex flex-col gap-1">
+              <MobileLink href="/en" label="For owners" onClick={() => setOpen(false)} />
+              <MobileLink href="/en#included" label="What's included" onClick={() => setOpen(false)} />
+              <MobileLink href="/en#pricing" label="Pricing" onClick={() => setOpen(false)} />
+              <MobileLink href="/en#faq" label="FAQ" onClick={() => setOpen(false)} />
+              <MobileLink href="/" label="عربي" onClick={() => setOpen(false)} />
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn-primary mt-2">WhatsApp</a>
+            </div>
+          </nav>
+        )}
+      </header>
+    );
+  }
 
   return (
     <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${shell}`}>
@@ -56,6 +97,7 @@ export function Navbar() {
               <NavLink href="/register" label="أنشئ حساب" light={overHero} />
             </>
           )}
+          <NavLink href="/en" label="English" light={overHero} />
           <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn-primary mr-1 text-base">
             واتساب
           </a>
@@ -87,6 +129,7 @@ export function Navbar() {
                 <MobileLink href="/register" label="أنشئ حساب" onClick={() => setOpen(false)} />
               </>
             )}
+            <MobileLink href="/en" label="English" onClick={() => setOpen(false)} />
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn-primary mt-2">واتساب</a>
           </div>
         </nav>
