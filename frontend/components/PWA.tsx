@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { captureUtmsFromUrl } from "@/lib/attribution";
+import { isEnglishPath } from "@/lib/lang";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -11,6 +13,8 @@ interface BeforeInstallPromptEvent extends Event {
 export function PWA() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [hidden, setHidden] = useState(false);
+  // The install prompt is Arabic-only; keep it off the English pages.
+  const en = isEnglishPath(usePathname());
 
   useEffect(() => {
     // Capture ad/share attribution (UTM) on every entry.
@@ -41,6 +45,7 @@ export function PWA() {
 
   if (!deferred || hidden) return null;
 
+  if (en) return null;
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center p-3">
       <div className="flex w-full max-w-md items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 shadow-[var(--shadow-hover)]">

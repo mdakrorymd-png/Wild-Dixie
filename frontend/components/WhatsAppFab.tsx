@@ -1,15 +1,22 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+import { isEnglishPath } from "@/lib/lang";
+
 const NUMBER = process.env.NEXT_PUBLIC_WHATSAPP ?? "201033388003";
 
 export function WhatsAppFab() {
-  const href = `https://wa.me/${NUMBER}?text=${encodeURIComponent("مرحبًا وايلد ديكسي، عايز أعرف أكتر عن إدارة وحدتي 🏖️")}`;
+  const en = isEnglishPath(usePathname());
+  const msg = en
+    ? "Hello Wild Dixie, I'd like to know more about managing my holiday home 🏖️"
+    : "مرحبًا وايلد ديكسي، عايز أعرف أكتر عن إدارة وحدتي 🏖️";
+  const href = `https://wa.me/${NUMBER}?text=${encodeURIComponent(msg)}`;
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="تواصل واتساب"
+      aria-label={en ? "Chat on WhatsApp" : "تواصل واتساب"}
       className="no-print fixed bottom-5 left-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_10px_30px_-6px_rgba(37,211,102,0.6)] transition hover:scale-105"
     >
       <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
